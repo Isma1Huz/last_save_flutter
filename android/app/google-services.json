@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "75133745727",
+    "project_id": "last-save",
+    "storage_bucket": "last-save.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:75133745727:android:3adaadb7b425379c2bd68a",
+        "android_client_info": {
+          "package_name": "com.example.last_save"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "75133745727-10ct1ejvgt95bvp652gkmnm7oc0d7f4f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHtnywQqNpUk-fi7jNUfvIk5Nz4GLgOnY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "75133745727-10ct1ejvgt95bvp652gkmnm7oc0d7f4f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
