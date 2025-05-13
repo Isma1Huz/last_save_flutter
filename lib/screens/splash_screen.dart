@@ -1,10 +1,7 @@
-// lib/screens/splash_screen.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:last_save/services/auth_service.dart';
 import 'package:last_save/screens/home_screen.dart';
-import 'package:last_save/screens/login_screen.dart';
-import 'package:last_save/utils/app_theme.dart';
+import 'package:last_save/screens/welcome_screen.dart';
+import 'package:last_save/services/firebase_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -17,40 +14,34 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkAuthState();
+    _checkAuthentication();
   }
 
-  Future<void> _checkAuthState() async {
-    // Wait for auth service to initialize
+  Future<void> _checkAuthentication() async {
+    await FirebaseService.initializeFirebase();
+    
     await Future.delayed(const Duration(seconds: 2));
     
+    // Check if user is authenticated
+    final bool isAuthenticated = await FirebaseService.isAuthenticated();
+    
     if (mounted) {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      
-      // Wait until auth service is initialized
-      if (!authService.isInitialized) {
-        await Future.doWhile(() => Future.delayed(
-              const Duration(milliseconds: 100),
-              () => !authService.isInitialized,
-            ));
-      }
-      
-      if (authService.isAuthenticated) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-      } else {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
-      }
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => isAuthenticated 
+              ? const HomeScreen() 
+              : const WelcomeScreen(),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.primaryColor,
+    return  Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -59,10 +50,6 @@ class _SplashScreenState extends State<SplashScreen> {
               'assets/images/logo.png',
               width: 150,
               height: 150,
-            ),
-            const SizedBox(height: 24),
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           ],
         ),

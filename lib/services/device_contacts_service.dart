@@ -1,3 +1,4 @@
+// services/device_contacts_service.dart
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
@@ -5,48 +6,69 @@ import 'package:last_save/models/contact.dart' as app;
 import 'package:last_save/services/permission_service.dart';
 import 'package:permission_handler/permission_handler.dart' as ph;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 class DeviceContactsService {
-  // Singleton pattern
   static final DeviceContactsService _instance = DeviceContactsService._internal();
   factory DeviceContactsService() => _instance;
   DeviceContactsService._internal();
 
-  // Cache for device contacts
   List<app.Contact>? _deviceContacts;
   final PermissionService _permissionService = PermissionService();
   
   // Check if contacts are loaded
   bool get isLoaded => _deviceContacts != null;
   
-  // Get device contacts
+  // Extract saved timestamp from contact events
+  DateTime? _extractSavedTimestamp(Contact contact) {
+    try {
+      // Look for an event with a custom label that starts with "Saved on:"
+      final savedEvent = contact.events.firstWhere(
+        (event) => event.customLabel?.startsWith('Saved on:') ?? false,
+        orElse: () => Event(year: 0,month:  0, day: 0),
+      );
+      
+      if (savedEvent.customLabel.startsWith('Saved on:')) {
+        // Extract the timestamp string from the custom label
+        final timestampStr = savedEvent.customLabel!.substring('Saved on: '.length);
+        try {
+          // Parse the timestamp string to a DateTime object
+          return DateFormat('yyyy-MM-dd HH:mm:ss').parse(timestampStr);
+        } catch (e) {
+          debugPrint('Error parsing timestamp: $e');
+          // If we can't parse the timestamp, use the event date
+          if (savedEvent.year! > 0 && savedEvent.month > 0 && savedEvent.day > 0) {
+            return DateTime(savedEvent.year!, savedEvent.month, savedEvent.day);
+          }
+        }
+      }
+      
+      // If no saved timestamp found, return null
+      return null;
+    } catch (e) {
+      debugPrint('Error extracting saved timestamp: $e');
+      return null;
+    }
+  }
+  
   Future<List<app.Contact>> getDeviceContacts() async {
-    // Return cached contacts if available
     if (_deviceContacts != null) {
       return _deviceContacts!;
     }
     
     try {
-      // First check if onboarding was completed
       await _permissionService.init();
+      // ignore: unused_local_variable
       final onboardingCompleted = await _permissionService.isOnboardingCompleted();
       
-      if (!onboardingCompleted) {
-        throw Exception('Onboarding not completed');
-      }
-      
-      // Check permission status using permission_handler directly
-      // instead of using the method that requires context
       final status = await ph.Permission.contacts.status;
       debugPrint('Permission status from permission_handler: ${status.toString()}');
       
       if (!status.isGranted) {
-        // If permission was denied permanently, throw exception
         if (status.isPermanentlyDenied) {
           throw Exception('Contacts permission permanently denied. Please enable in settings.');
         }
         
-        // Try to request permission using permission_handler directly
         final result = await ph.Permission.contacts.request();
         debugPrint('Permission request result: ${result.toString()}');
         
@@ -55,16 +77,6 @@ class DeviceContactsService {
         }
       }
       
-      // Request permission using flutter_contacts
-      // This method both checks and requests permission
-      final requestResult = await FlutterContacts.requestPermission();
-      debugPrint('Flutter_contacts permission request result: $requestResult');
-      
-      if (!requestResult) {
-        throw Exception('Contacts permission not granted by flutter_contacts');
-      }
-      
-      // Fetch contacts from device with photo and all properties
       debugPrint('Fetching contacts...');
       final deviceContacts = await FlutterContacts.getContacts(
         withPhoto: true,
@@ -79,9 +91,7 @@ class DeviceContactsService {
         return [];
       }
       
-      // Convert to app Contact model
       _deviceContacts = await Future.wait(deviceContacts.map((contact) async {
-        // Get full contact with all details
         Contact? fullContact;
         try {
           fullContact = await FlutterContacts.getContact(contact.id);
@@ -90,40 +100,39 @@ class DeviceContactsService {
           debugPrint('Error getting full contact: $e');
         }
         
-        // Use the contact we have, either full or partial
         final contactToUse = fullContact ?? contact;
         
-        // Get primary phone number
         String phoneNumber = '';
         if (contactToUse.phones.isNotEmpty) {
           phoneNumber = contactToUse.phones.first.number;
         }
         
-        // Get primary email
         String? email;
         if (contactToUse.emails.isNotEmpty) {
           email = contactToUse.emails.first.address;
         }
         
-        // Get photo
         Uint8List? photo = contactToUse.photo;
         if (photo == null && contactToUse.thumbnail != null) {
           photo = contactToUse.thumbnail;
         }
+        
+        // Extract saved timestamp
+        final savedTimestamp = _extractSavedTimestamp(contactToUse);
         
         return app.Contact(
           id: contactToUse.id,
           name: contactToUse.displayName,
           phoneNumber: phoneNumber,
           email: email,
-          categories: [], // New contacts don't belong to any category initially
+          categories: [], 
           photo: photo,
+          savedTimestamp: savedTimestamp, // Add the saved timestamp
         );
       }).toList());
       
       debugPrint('Converted ${_deviceContacts!.length} contacts to app model');
       
-      // Save permission status to shared preferences to avoid future issues
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('contacts_permission_granted', true);
       
@@ -134,7 +143,6 @@ class DeviceContactsService {
     }
   }
   
-  // Clear cache to force reload
   void clearCache() {
     _deviceContacts = null;
   }

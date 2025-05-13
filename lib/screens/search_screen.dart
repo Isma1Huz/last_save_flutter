@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:last_save/models/contact.dart';
+import 'package:last_save/screens/contact_details_screen.dart';
 import 'package:last_save/services/device_contacts_service.dart';
 import 'package:last_save/services/permission_service.dart';
-import 'package:last_save/utils/app_theme.dart';
+import 'package:last_save/widgets/home/bottom_navigation.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+import 'package:last_save/widgets/search/search_input.dart';
+import 'package:last_save/widgets/search/filter_tabs.dart';
+import 'package:last_save/widgets/search/contact_list.dart';
+import 'package:last_save/widgets/search/loading_state.dart';
+import 'package:last_save/widgets/search/error_state.dart';
+import 'package:last_save/widgets/search/empty_state.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -15,11 +23,6 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final DeviceContactsService _deviceContactsService = DeviceContactsService();
   final PermissionService _permissionService = PermissionService();
-  // final prefs = await SharedPreferences.getInstance();
-  // print("Contacts granted: ${prefs.getBool('Permission.contacts')}");
-  // print("Location granted: ${prefs.getBool('Permission.location')}");
-  // print("Storage granted: ${prefs.getBool('Permission.storage')}");
-
   
   List<Contact> _contacts = [];
   List<Contact> _filteredContacts = [];
@@ -27,6 +30,7 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _hasError = false;
   String _errorMessage = '';
   bool _isPermanentlyDenied = false;
+  int _currentTab = 0;
   
   final TextEditingController _searchController = TextEditingController();
   
@@ -49,14 +53,11 @@ class _SearchScreenState extends State<SearchScreen> {
       _errorMessage = '';
       _isPermanentlyDenied = false;
     });
-    
     try {
-      // Check permission status first
       await _permissionService.init();
       final permissionStatus = await _permissionService.checkContactsPermission();
       
       if (!permissionStatus['isGranted']) {
-        // If permission is permanently denied, show special message
         if (permissionStatus['isPermanentlyDenied']) {
           setState(() {
             _isLoading = false;
@@ -67,8 +68,8 @@ class _SearchScreenState extends State<SearchScreen> {
           return;
         }
         
-        // Try to request permission
         final hasPermission = await _permissionService.requestContactsPermission(
+          // ignore: use_build_context_synchronously
           context: context,
           showRationale: true,
         );
@@ -83,7 +84,6 @@ class _SearchScreenState extends State<SearchScreen> {
         }
       }
       
-      // Load device contacts
       final contacts = await _deviceContactsService.getDeviceContacts();
       
       setState(() {
@@ -91,23 +91,12 @@ class _SearchScreenState extends State<SearchScreen> {
         _filteredContacts = contacts;
         _isLoading = false;
       });
-      
-      // Show success message if contacts were loaded
-      if (contacts.isNotEmpty && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Loaded ${contacts.length} contacts'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
     } catch (e) {
       setState(() {
         _isLoading = false;
         _hasError = true;
         _errorMessage = 'Failed to load contacts: ${e.toString()}';
         
-        // Check if error is about permanently denied permission
         if (e.toString().contains('permanently denied')) {
           _isPermanentlyDenied = true;
         }
@@ -118,195 +107,116 @@ class _SearchScreenState extends State<SearchScreen> {
   void _filterContacts(String query) {
     if (query.isEmpty) {
       setState(() {
-        _filteredContacts = _contacts;
+        _filteredContacts = _filterContactsByTab(_contacts);
       });
       return;
     }
     
     final lowercaseQuery = query.toLowerCase();
+    final filtered = _contacts.where((contact) {
+      return contact.name.toLowerCase().contains(lowercaseQuery) ||
+             contact.phoneNumber.contains(query) ||
+             (contact.email?.toLowerCase().contains(lowercaseQuery) ?? false);
+    }).toList();
+    
     setState(() {
-      _filteredContacts = _contacts.where((contact) {
-        return contact.name.toLowerCase().contains(lowercaseQuery) ||
-               contact.phoneNumber.contains(query) ||
-               (contact.email?.toLowerCase().contains(lowercaseQuery) ?? false);
-      }).toList();
+      _filteredContacts = _filterContactsByTab(filtered);
     });
   }
   
+  List<Contact> _filterContactsByTab(List<Contact> contacts) {
+    switch (_currentTab) {
+      case 0: // All
+        return contacts;
+      case 1: // Missed
+        // Implement missed contacts filtering logic
+        return contacts;
+      case 2: // Contacts
+        // Return all contacts (already filtered by search if any)
+        return contacts;
+      case 3: // Non-Spam
+        // Implement non-spam filtering logic
+        return contacts;
+      case 4: // Spam
+        // Implement spam filtering logic
+        return contacts;
+      default:
+        return contacts;
+    }
+  }
+  
+  void _onTabChanged(int tabIndex) {
+    setState(() {
+      _currentTab = tabIndex;
+      _filteredContacts = _filterContactsByTab(_contacts);
+    });
+  }
+    
+  void _showContactDetails(Contact contact) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ContactViewScreen(contact: contact),
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Search Contacts'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              // Clear cache and reload contacts
-              _deviceContactsService.clearCache();
-              _loadContacts();
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            SearchInput(
               controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search contacts...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          _filterContacts('');
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                filled: true,
-                fillColor: Colors.grey[100],
-              ),
               onChanged: _filterContacts,
+              onClear: () {
+                _searchController.clear();
+                _filterContacts('');
+              },
+              onMoreTap: () {
+              },
             ),
-          ),
-          Expanded(
-            child: _buildContactsList(),
-          ),
-        ],
+            FilterTabs(
+              initialTab: _currentTab,
+              onTabChanged: _onTabChanged,
+            ),
+            Expanded(
+              child: _buildContentArea(),
+            ),
+          ],
+        ),
       ),
+      bottomNavigationBar: const BottomNavigation(),
     );
   }
   
-  Widget _buildContactsList() {
+  Widget _buildContentArea() {
     if (_isLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Loading contacts...'),
-          ],
-        ),
-      );
+      return const LoadingState();
     }
     
     if (_hasError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 48,
-              color: Colors.red,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _errorMessage,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 24),
-            if (_isPermanentlyDenied)
-              ElevatedButton(
-                onPressed: () async {
-                  await openAppSettings();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: const Text(
-                  'Open Settings',
-                  style: TextStyle(color: Colors.white),
-                ),
-              )
-            else
-              ElevatedButton(
-                onPressed: _loadContacts,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: const Text(
-                  'Try Again',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-          ],
-        ),
+      return ErrorState(
+        errorMessage: _errorMessage,
+        isPermanentlyDenied: _isPermanentlyDenied,
+        onRetry: _loadContacts,
+        onOpenSettings: () async {
+          await openAppSettings();
+        },
       );
     }
     
     if (_filteredContacts.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.search_off,
-              size: 48,
-              color: Colors.grey,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _searchController.text.isNotEmpty
-                  ? 'No contacts found matching "${_searchController.text}"'
-                  : 'No contacts found on this device',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
-            ),
-          ],
-        ),
+      return EmptyState(
+        hasSearchQuery: _searchController.text.isNotEmpty,
+        searchQuery: _searchController.text,
       );
     }
     
-    return ListView.builder(
-      itemCount: _filteredContacts.length,
-      itemBuilder: (context, index) {
-        final contact = _filteredContacts[index];
-        return ListTile(
-          leading: _buildContactAvatar(contact),
-          title: Text(contact.name),
-          subtitle: Text(contact.phoneNumber),
-          trailing: contact.email != null ? const Icon(Icons.email) : null,
-          onTap: () {
-            // Handle contact selection
-            _showContactDetails(contact);
-          },
-        );
-      },
+    return ContactsList(
+      contacts: _filteredContacts,
+      onContactTap: _showContactDetails,
     );
-  }
-  
-  // Rest of the code remains the same...
-  Widget _buildContactAvatar(Contact contact) {
-    if (contact.photo != null) {
-      return CircleAvatar(
-        backgroundImage: MemoryImage(contact.photo!),
-      );
-    }
-    
-    return CircleAvatar(
-      backgroundColor: AppTheme.primaryColor,
-      child: Text(
-        contact.name.isNotEmpty ? contact.name[0].toUpperCase() : '?',
-        style: const TextStyle(color: Colors.white),
-      ),
-    );
-  }
-  
-  void _showContactDetails(Contact contact) {
-    // Existing implementation...
   }
 }

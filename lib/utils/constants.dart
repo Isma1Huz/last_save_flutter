@@ -1,4 +1,3 @@
-/// AppConstants contains all the constant values used throughout the app
 class AppConstants {
   // App info
   static const String appName = 'LastSave';

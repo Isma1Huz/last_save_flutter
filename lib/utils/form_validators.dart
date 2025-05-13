@@ -1,6 +1,5 @@
 /// A utility class for form validation functions
 class FormValidators {
-  /// Validates that the input is not empty
   static String? required(String? value, [String message = 'This field is required']) {
     if (value == null || value.isEmpty) {
       return message;
@@ -18,6 +17,7 @@ class FormValidators {
     }
     return null;
   }
+
 
   /// Validates that the password meets minimum requirements
   static String? password(String? value) {

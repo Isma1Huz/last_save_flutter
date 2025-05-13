@@ -3,10 +3,11 @@ import 'package:last_save/screens/login_screen.dart';
 import 'package:last_save/screens/onboarding_screen.dart';
 import 'package:last_save/utils/app_theme.dart';
 import 'package:last_save/utils/form_validators.dart';
-import 'package:last_save/widgets/app_button.dart';
-import 'package:last_save/widgets/app_layout.dart';
-import 'package:last_save/widgets/app_text_field.dart';
-import 'package:last_save/widgets/social_login_button.dart';
+import 'package:last_save/widgets/ui/app_button.dart';
+import 'package:last_save/widgets/layout/app_layout.dart';
+import 'package:last_save/widgets/ui/app_text_field.dart';
+import 'package:last_save/widgets/ui/social_login_button.dart';
+import 'package:last_save/services/firebase_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -35,43 +36,80 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _register() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      await Future.delayed(const Duration(seconds: 1));
-      setState(() => _isLoading = false);
 
+      try {
+        await FirebaseService.registerWithEmailPassword(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+        
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const OnboardingScreen(),
+            ),
+          );
+        }
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error.toString()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    }
+  }
+
+  void _registerWithGoogle() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      await FirebaseService.signInWithGoogle();
+      
       if (mounted) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => OnboardingScreen(),
+            builder: (context) => const OnboardingScreen(),
           ),
         );
+      }
+    } catch (error) {
+      if (mounted && error.toString() != 'Sign in aborted by user') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return AppScreen(
+    return  Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
         elevation: 0,
-        titleSpacing: 0,
-        title: Padding(
-          padding: const EdgeInsets.only(left: 24.0),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black, width: 1.5),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-        ),
       ),
-      child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
         child: Form(
           key: _formKey,
           child: Column(
@@ -121,7 +159,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   SocialLoginButton(
                     iconData: Icons.facebook,
                     color: Colors.blue,
-                    onPressed: () {},
+                    onPressed: (){},
                   ),
                   SocialLoginButton(
                     customIcon: Image.asset(
@@ -130,7 +168,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       height: 30,
                       fit: BoxFit.contain,
                     ),
-                    onPressed: () {},
+                    onPressed: _registerWithGoogle,
                   ),
                   SocialLoginButton(
                     iconData: Icons.apple,

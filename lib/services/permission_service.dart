@@ -10,39 +10,31 @@ class PermissionService {
   
   late SharedPreferences _prefs;
   
-  // Initialize shared preferences
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
   }
   
-  // Check if onboarding is completed
   Future<bool> isOnboardingCompleted() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_onboardingCompletedKey) ?? false;
   }
   
-  // Mark onboarding as completed
   Future<void> setOnboardingCompleted() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_onboardingCompletedKey, true);
     
-    // Also save current permission statuses
     await _savePermissionStatuses();
   }
   
-  // Save current permission statuses to SharedPreferences
   Future<void> _savePermissionStatuses() async {
     final prefs = await SharedPreferences.getInstance();
     
-    // Check and save contacts permission
     final contactsStatus = await Permission.contacts.status;
     await prefs.setBool(_contactsPermissionKey, contactsStatus.isGranted);
     
-    // Check and save location permission
     final locationStatus = await Permission.location.status;
     await prefs.setBool(_locationPermissionKey, locationStatus.isGranted);
     
-    // Check and save storage permission
     final storageStatus = await Permission.storage.status;
     await prefs.setBool(_storagePermissionKey, storageStatus.isGranted);
     
@@ -50,21 +42,16 @@ class PermissionService {
         'Location: ${locationStatus.isGranted}, Storage: ${storageStatus.isGranted}');
   }
   
-  // Check contacts permission status
   Future<Map<String, dynamic>> checkContactsPermission() async {
-    // First check if we have a cached result
     final prefs = await SharedPreferences.getInstance();
     final cachedResult = prefs.getBool(_contactsPermissionKey);
     
-    // If we have a cached true result, verify it's still valid
     if (cachedResult == true) {
       final currentStatus = await Permission.contacts.status;
       
-      // If permission is no longer granted, update cache
       if (!currentStatus.isGranted) {
         await prefs.setBool(_contactsPermissionKey, false);
       } else {
-        // Permission is still granted, return early
         debugPrint('Using cached contacts permission: granted');
         return {
           'isGranted': true,
@@ -73,7 +60,6 @@ class PermissionService {
       }
     }
     
-    // Check actual permission status
     final status = await Permission.contacts.status;
     debugPrint('Contacts permission status: $status');
     
@@ -86,13 +72,11 @@ class PermissionService {
     };
   }
   
-  // Check if contacts permission is granted
   Future<bool> hasContactsPermission() async {
     final result = await checkContactsPermission();
     return result['isGranted'];
   }
   
-  // Request contacts permission
   Future<bool> requestContactsPermission({
     required BuildContext? context,
     bool showRationale = false,
@@ -109,7 +93,6 @@ class PermissionService {
     if (status.isPermanentlyDenied) {
       debugPrint('Contacts permission permanently denied');
       if (showRationale && context != null) {
-        // Show dialog explaining why we need permission and how to enable it
         final shouldOpenSettings = await _showPermissionRationaleDialog(
           context: context,
           title: 'Contacts Permission Required',
@@ -128,21 +111,17 @@ class PermissionService {
     final result = await Permission.contacts.request();
     debugPrint('Contacts permission request result: $result');
     
-    // Save the result to SharedPreferences
     await _savePermissionStatus(_contactsPermissionKey, result.isGranted);
     
     return result.isGranted;
   }
   
-  // Save a specific permission status
   Future<void> _savePermissionStatus(String key, bool isGranted) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(key, isGranted);
     debugPrint('Saved permission status for $key: $isGranted');
   }
   
-  // The rest of your methods for location and storage permissions...
-  // Check location permission
   Future<bool> hasLocationPermission() async {
     final prefs = await SharedPreferences.getInstance();
     final cachedResult = prefs.getBool(_locationPermissionKey);
@@ -161,7 +140,6 @@ class PermissionService {
     return status.isGranted;
   }
   
-  // Request location permission
   Future<bool> requestLocationPermission({
     required BuildContext? context,
     bool showRationale = false,
@@ -200,7 +178,6 @@ class PermissionService {
     return result.isGranted;
   }
   
-  // Check storage permission
   Future<bool> hasStoragePermission() async {
     final prefs = await SharedPreferences.getInstance();
     final cachedResult = prefs.getBool(_storagePermissionKey);
@@ -219,7 +196,6 @@ class PermissionService {
     return status.isGranted;
   }
   
-  // Request storage permission
   Future<bool> requestStoragePermission({
     required BuildContext? context,
     bool showRationale = false,
@@ -284,4 +260,6 @@ class PermissionService {
     
     return result ?? false;
   }
+
+  requestPermissions() {}
 }

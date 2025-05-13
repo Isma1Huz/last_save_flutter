@@ -4,28 +4,8 @@ class Category {
   final String id;
   final String title;
   final String? description;
-  final int iconIndex; // Store icon index instead of IconData
+  final int iconIndex;
   final int contactCount;
-
-  // Predefined list of available icons
-  static const List<IconData> availableIcons = [
-    Icons.folder,
-    Icons.work,
-    Icons.person,
-    Icons.favorite,
-    Icons.star,
-    Icons.school,
-    Icons.home,
-    Icons.sports,
-    Icons.music_note,
-    Icons.local_dining,
-    Icons.local_hospital,
-    Icons.shopping_cart,
-    Icons.directions_car,
-    Icons.flight,
-    Icons.hotel,
-    Icons.beach_access,
-  ];
 
   Category({
     required this.id,
@@ -35,10 +15,21 @@ class Category {
     this.contactCount = 0,
   });
 
-  // Get the actual IconData from the index
-  IconData get icon => iconIndex < availableIcons.length 
-      ? availableIcons[iconIndex] 
-      : Icons.folder; // Default icon
+  // Available icons for categories
+  static List<IconData> availableIcons = [
+    Icons.person,
+    Icons.work,
+    Icons.family_restroom,
+    Icons.favorite,
+    Icons.school,
+    Icons.sports,
+    Icons.local_hospital,
+    Icons.restaurant,
+    Icons.shopping_cart,
+    Icons.star,
+    Icons.public,
+    Icons.phone,
+  ];
 
   Category copyWith({
     String? id,
@@ -56,7 +47,6 @@ class Category {
     );
   }
 
-  // Store only the icon index
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -67,13 +57,12 @@ class Category {
     };
   }
 
-  // Load from JSON
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(
       id: json['id'],
       title: json['title'],
       description: json['description'],
-      iconIndex: json['iconIndex'] ?? 0,
+      iconIndex: json['iconIndex'],
       contactCount: json['contactCount'] ?? 0,
     );
   }

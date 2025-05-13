@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:last_save/constants/onboarding_constants.dart';
 import 'package:last_save/screens/home_screen.dart';
-import 'package:last_save/utils/app_theme.dart';
-import 'package:last_save/widgets/permission_card.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:last_save/services/permission_service.dart';
+import 'package:last_save/utils/image_precacher.dart';
+import 'package:last_save/widgets/onboarding/onboarding_content.dart';
+import 'package:last_save/widgets/onboarding/permissions_page.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// OnboardingScreen requests necessary permissions from the user
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -18,50 +19,45 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PermissionService _permissionService = PermissionService();
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  bool _precacheStarted = false;
 
-  final List<Map<String, dynamic>> _onboardingData = [
-    {
-      'title': 'Find Contacts in Seconds with Smart AI Search',
-      'description': 'Effortlessly locate any contact with powerful AI-driven search that understands names, job roles, locations, and even context—helping you stay organized and productive.',
-      'image': 'assets/images/onboard1.png',
-    },
-    {
-      'title': 'Visualize Your Network with Contact Relationships',
-      'description': 'Explore connections between your contacts through intelligent relationship mapping—whether it\'s colleagues, family, or frequent collaborators, everything is linked.',
-      'image': 'assets/images/onboard3.png',
-    },
-    {
-      'title': 'Add Contacts via QR, Save Events & Pin Locations',
-      'description': 'Easily add new contacts by scanning QR codes, save important events to profiles, and view contact locations on the map—your contact book just got smarter.',
-      'image': 'assets/images/onboard2.png',
-    },
-  ];
-
-  final List<Map<String, dynamic>> _permissions = [
-    {
-      'title': 'Contacts',
-      'description': 'Allow LastSave to access your contacts',
-      'icon': Icons.contacts,
-      'granted': false,
-    },
-    {
-      'title': 'Location',
-      'description': 'Allow LastSave to access your location',
-      'icon': Icons.location_on,
-      'granted': false,
-    },
-    {
-      'title': 'Storage',
-      'description': 'Allow LastSave to access your storage',
-      'icon': Icons.storage,
-      'granted': false,
-    },
-  ];
+  late List<Map<String, dynamic>> _permissions;
 
   @override
   void initState() {
     super.initState();
+    _permissions = List<Map<String, dynamic>>.from(
+      OnboardingConstants.permissionsData.map((p) => Map<String, dynamic>.from(p))
+    );
     _initPermissionStatus();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_precacheStarted) {
+      _precacheStarted = true; 
+      _precacheImages();
+    }
+  }
+
+  Future<void> _precacheImages() async {
+    try {
+      for (final imagePath in OnboardingConstants.onboardingImages) {
+        await precacheImage(AssetImage(imagePath), context);
+      }
+      
+      if (mounted) {
+        setState(() {
+        });
+      }
+    } catch (e) {
+      debugPrint('Error precaching images: $e');
+      if (mounted) {
+        setState(() {
+        });
+      }
+    }
   }
 
   @override
@@ -80,11 +76,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     debugPrint('Initial permission status - Contacts: $hasContactsPermission, '
         'Location: $hasLocationPermission, Storage: $hasStoragePermission');
 
-    setState(() {
-      _permissions[0]['granted'] = hasContactsPermission;
-      _permissions[1]['granted'] = hasLocationPermission;
-      _permissions[2]['granted'] = hasStoragePermission;
-    });
+    if (mounted) {
+      setState(() {
+        _permissions[0]['granted'] = hasContactsPermission;
+        _permissions[1]['granted'] = hasLocationPermission;
+        _permissions[2]['granted'] = hasStoragePermission;
+      });
+    }
   }
 
   void _requestPermission(int index) async {
@@ -155,17 +153,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _nextPage() {
-    if (_currentPage < _onboardingData.length) {
+    if (_currentPage < OnboardingConstants.onboardingData.length) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
-  }
-
-  void _previousPage() {
-    if (_currentPage > 0) {
-      _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
@@ -174,7 +163,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+      ),
       body: SafeArea(
         child: PageView(
           controller: _pageController,
@@ -184,153 +177,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             });
           },
           children: [
-            ..._onboardingData.map((data) => _buildOnboardingPage(data)),
-            _buildPermissionsPage(),
+            ...OnboardingConstants.onboardingData.map(
+              (data) => OnboardingContent(
+                data: data,
+                currentPage: _currentPage,
+                totalPages: OnboardingConstants.onboardingData.length + 1,
+                onNext: _nextPage,
+              ),
+            ),
+            PermissionsPage(
+              permissions: _permissions,
+              currentPage: _currentPage,
+              totalPages: OnboardingConstants.onboardingData.length + 1,
+              onRequestPermission: _requestPermission,
+              onContinue: _continueToHome,
+            ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildOnboardingPage(Map<String, dynamic> data) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            flex: 3,
-            child: Image.asset(
-              data['image'],
-              fit: BoxFit.contain,
-            ),
-          ),
-          const SizedBox(height: 32),
-          Text(
-            data['title'],
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            data['description'],
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 48),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              _onboardingData.length + 1,
-              (index) => Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _currentPage == index
-                      ? AppTheme.primaryColor
-                      : Colors.grey.shade300,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-          if (_currentPage < _onboardingData.length)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _nextPage,
-                child: const Text(
-                  'Next',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPermissionsPage() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 16),
-          const Text(
-            'Permissions',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'LastSave needs the following permissions to provide you with the best experience:',
-            style: TextStyle(
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _permissions.length,
-              itemBuilder: (context, index) {
-                final permission = _permissions[index];
-                return PermissionCard(
-                  title: permission['title'],
-                  description: permission['description'],
-                  icon: permission['icon'],
-                  granted: permission['granted'],
-                  onRequest: () => _requestPermission(index),
-                );
-              },
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              _onboardingData.length + 1,
-              (index) => Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _currentPage == index
-                      ? AppTheme.primaryColor
-                      : Colors.grey.shade300,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Center(
-            child: SizedBox(
-              child: ElevatedButton(
-                onPressed: _permissions.every((p) => p['granted'] == true)
-                    ? _continueToHome
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                child: const Text(
-                  'Finish up',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

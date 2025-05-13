@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:last_save/screens/otp_verification_screen.dart';
 import 'package:last_save/utils/app_theme.dart';
-import 'package:last_save/widgets/app_button.dart';
-import 'package:last_save/widgets/app_layout.dart';
-import 'package:last_save/widgets/app_text_field.dart';
+import 'package:last_save/widgets/ui/app_button.dart';
+import 'package:last_save/widgets/layout/app_layout.dart';
+import 'package:last_save/widgets/ui/app_text_field.dart';
+import 'package:last_save/services/firebase_service.dart';
 
-/// ForgotPasswordScreen allows users to request a password reset
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -30,49 +30,47 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         _isLoading = true;
       });
 
-      // Simulate network delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OTPVerificationScreen(
-              email: _emailController.text,
+      try {
+        await FirebaseService.sendPasswordResetEmail(_emailController.text.trim());
+        
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OTPVerificationScreen(
+                email: _emailController.text,
+              ),
             ),
-          ),
-        );
+          );
+        }
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error.toString()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return AppScreen(
+    return  Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
         elevation: 0,
-        titleSpacing: 0,
-        title: Padding(
-          padding: const EdgeInsets.only(left: 24.0),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black, width: 1.5),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-        ),
       ),
-      child: SingleChildScrollView(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(4.0),
           child: Form(
@@ -80,7 +78,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Heading
                 const SectionTitle(
                   title: 'Forgot Password?',
                 ),
@@ -91,14 +88,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
                 const VerticalSpace(height: 32),
 
-                // Email field
                 AppEmailField(
                   controller: _emailController,
                   hintText: 'Enter your email',
                 ),
                 const VerticalSpace(height: 24),
 
-                // Send code button
                 AppButton(
                     text: _isLoading ? 'Sending...' : 'Send Code',
                     onPressed: () {
@@ -113,6 +108,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
       ),
+      )
+
     );
   }
 }

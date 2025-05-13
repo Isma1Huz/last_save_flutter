@@ -1,35 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:last_save/screens/login_screen.dart';
 import 'package:last_save/utils/app_theme.dart';
-import 'package:last_save/widgets/app_button.dart';
-import 'package:last_save/widgets/app_layout.dart';
+import 'package:last_save/widgets/ui/app_button.dart';
 
 class PasswordChangedScreen extends StatelessWidget {
   const PasswordChangedScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Get the screen size to provide definite constraints
-    final screenSize = MediaQuery.of(context).size;
-    
-    return Scaffold( // Use Scaffold directly instead of AppScreen if possible
+    return  Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return SingleChildScrollView( // Add this to ensure content can scroll if needed
+            return SingleChildScrollView( 
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   minHeight: constraints.maxHeight,
                   minWidth: constraints.maxWidth,
                 ),
-                child: IntrinsicHeight( // This helps with the Spacer widgets
+                child: IntrinsicHeight( 
                   child: Padding(
                     padding: const EdgeInsets.all(24.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const SizedBox(height: 40), // Fixed height instead of Spacer
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -66,7 +64,7 @@ class PasswordChangedScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 40), // Fixed height instead of Spacer
+                        const SizedBox(height: 40), 
                         Padding(
                           padding: const EdgeInsets.only(bottom: 16.0),
                           child: AppButton(

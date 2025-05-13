@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:last_save/screens/reset_password_screen.dart';
 import 'package:last_save/utils/app_theme.dart';
-import 'package:last_save/widgets/app_button.dart';
-import 'package:last_save/widgets/app_layout.dart';
-import 'package:last_save/widgets/otp_input_field.dart';
+import 'package:last_save/widgets/ui/app_button.dart';
+import 'package:last_save/widgets/layout/app_layout.dart';
+import 'package:last_save/widgets/ui/otp_input_field.dart';
 
-/// OTPVerificationScreen allows users to verify their email with a code
 class OTPVerificationScreen extends StatefulWidget {
   final String email;
 
@@ -22,37 +21,50 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   bool _isLoading = false;
   String _otp = '';
 
-    void _verifyOTP() async {
+  void _verifyOTP() async {
     if (_otp.length == 4) {
-        setState(() {
+      setState(() {
         _isLoading = true;
-        });
+      });
 
-        // Simulate network delay
-        await Future.delayed(const Duration(seconds: 1));
-
-        setState(() {
-        _isLoading = false;
-        });
-
+      try {
         if (mounted) {
-        Navigator.pushAndRemoveUntil(
+          Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => const ResetPasswordScreen()),
+            MaterialPageRoute(
+              builder: (context) => ResetPasswordScreen(
+                email: widget.email,
+                resetCode: _otp,
+              ),
+            ),
             (route) => false,
-        );
+          );
         }
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error.toString()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } else {
-        ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a valid 4-digit code')),
-        );
+      );
     }
-    }
-
+  }
 
   void _resendCode() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
+        backgroundColor: AppTheme.successColor,
         content: Text('Verification code resent'),
       ),
     );
@@ -60,30 +72,15 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppScreen(
+    return  Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
         elevation: 0,
-        titleSpacing: 0,
-        title: Padding(
-          padding: const EdgeInsets.only(left: 24.0),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black, width: 1.5),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-        ),
       ),
-      child: Column(
+      body: Padding(
+        padding: const EdgeInsets.all(0),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Heading
           const SectionTitle(
             title: 'OTP Verification',
           ),
@@ -93,7 +90,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           ),
           const VerticalSpace(height: 32),
           
-          // OTP input fields
           Center(
             child: OTPInputField(
               length: 4,
@@ -106,7 +102,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           ),
           const VerticalSpace(height: 32),
           
-          // Verify button
           AppButton(
             text: 'Verify',
             onPressed: _verifyOTP,
@@ -114,7 +109,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           ),
           const VerticalSpace(height: 24),
           
-          // Resend code link
           Center(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -129,6 +123,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           ),
         ],
       ),
+      )
+
     );
   }
 }

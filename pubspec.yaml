@@ -9,25 +9,45 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
+  cloud_firestore: ^5.6.7
+  cloud_functions: ^5.5.0
+  connectivity_plus: ^4.0.2
+  cupertino_icons: ^1.0.2
+  firebase_auth: ^5.5.3
+  firebase_core: ^3.13.0
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
-  permission_handler: ^12.0.0+1
   flutter_contacts: ^1.1.9+2
+  flutter_launcher_icons: ^0.14.3
+  flutter_map: ^8.1.1
+  geocoding: ^3.0.0
+  geolocator: ^14.0.0
+  google_sign_in: ^6.3.0
+  image_picker: ^1.1.2
+  intl: ^0.20.2
+  latlong2: ^0.9.1
+  maps_launcher: ^3.0.0+1
+  permission_handler: ^12.0.0+1
+  share_plus: ^11.0.0
   shared_preferences: ^2.5.3
-  firebase_core: ^2.15.1
-  firebase_auth: ^4.9.0
-  google_sign_in: ^6.1.5
-  flutter_facebook_auth: ^6.0.1
   sign_in_with_apple: ^7.0.1
-  cloud_firestore: ^4.9.1
-  connectivity_plus: ^4.0.2
-  provider: ^6.0.5
+  speech_to_text: ^7.0.0
+  url_launcher: ^6.3.1
+  uuid: ^4.5.1
 
 dev_dependencies:
+  flutter_lints: ^2.0.0
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/logo.png"
+  remove_alpha_ios: true
+  min_sdk_android: 21
 
 flutter:
   uses-material-design: true
@@ -37,13 +57,7 @@ flutter:
     - assets/images/onboard1.png
     - assets/images/onboard2.png
     - assets/images/onboard3.png
-
-
-
-
-
-
-
-
-
-
+    - assets/images/on1.jpg
+    - assets/images/on2.jpg
+    - assets/images/on3.jpg
+    - assets/images/welkom.jpg
