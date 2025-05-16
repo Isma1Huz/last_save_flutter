@@ -28,7 +28,7 @@ class PlacesMapCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             child: FlutterMap(
               options: const MapOptions(
-                initialCenter: LatLng(-1.286389, 36.817223), // Example: Nairobi
+                initialCenter: LatLng(-1.286389, 36.817223), 
                 initialZoom: 13,
               ),
               children: [

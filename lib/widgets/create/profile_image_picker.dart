@@ -35,7 +35,7 @@ class ProfileImageWidget extends StatelessWidget {
             radius: 60,
             backgroundColor: profileImage != null 
                 ? Colors.transparent 
-                : const Color(0xFFAFE1F6), // Light blue background when no image
+                : const Color(0xFFAFE1F6), 
             child: profileImage != null
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(60),
@@ -61,9 +61,7 @@ class ProfileImageWidget extends StatelessWidget {
         
         const SizedBox(height: 8),
         
-        // Text or Action Buttons
         if (profileImage == null)
-          // Show "Add picture" text when no image
           const Text(
             "Add picture",
             style: TextStyle(
@@ -73,7 +71,6 @@ class ProfileImageWidget extends StatelessWidget {
             ),
           )
         else
-          // Show Change and Remove buttons when image is selected
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

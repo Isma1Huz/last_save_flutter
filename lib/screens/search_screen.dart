@@ -1,9 +1,10 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:last_save/models/contact.dart';
 import 'package:last_save/screens/contact_details_screen.dart';
 import 'package:last_save/services/device_contacts_service.dart';
 import 'package:last_save/services/permission_service.dart';
-import 'package:last_save/widgets/home/bottom_navigation.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:last_save/widgets/search/search_input.dart';
@@ -31,6 +32,7 @@ class _SearchScreenState extends State<SearchScreen> {
   String _errorMessage = '';
   bool _isPermanentlyDenied = false;
   int _currentTab = 0;
+  String? _selectedCategoryId;
   
   final TextEditingController _searchController = TextEditingController();
   
@@ -69,7 +71,6 @@ class _SearchScreenState extends State<SearchScreen> {
         }
         
         final hasPermission = await _permissionService.requestContactsPermission(
-          // ignore: use_build_context_synchronously
           context: context,
           showRationale: true,
         );
@@ -123,31 +124,30 @@ class _SearchScreenState extends State<SearchScreen> {
       _filteredContacts = _filterContactsByTab(filtered);
     });
   }
+
+  void _onCategorySelected(String categoryId) {
+    setState(() {
+      _selectedCategoryId = categoryId;
+      _filteredContacts = _filterContactsByTab(_contacts);
+    });
+  }
   
   List<Contact> _filterContactsByTab(List<Contact> contacts) {
-    switch (_currentTab) {
-      case 0: // All
-        return contacts;
-      case 1: // Missed
-        // Implement missed contacts filtering logic
-        return contacts;
-      case 2: // Contacts
-        // Return all contacts (already filtered by search if any)
-        return contacts;
-      case 3: // Non-Spam
-        // Implement non-spam filtering logic
-        return contacts;
-      case 4: // Spam
-        // Implement spam filtering logic
-        return contacts;
-      default:
-        return contacts;
+    if (_currentTab == 0) {
+      return contacts;
+    } else if (_selectedCategoryId != null) {
+      return contacts; 
     }
+    return contacts;
   }
   
   void _onTabChanged(int tabIndex) {
     setState(() {
       _currentTab = tabIndex;
+      // Reset selected category if "All" is selected
+      if (tabIndex == 0) {
+        _selectedCategoryId = null;
+      }
       _filteredContacts = _filterContactsByTab(_contacts);
     });
   }
@@ -174,12 +174,11 @@ class _SearchScreenState extends State<SearchScreen> {
                 _searchController.clear();
                 _filterContacts('');
               },
-              onMoreTap: () {
-              },
             ),
             FilterTabs(
               initialTab: _currentTab,
               onTabChanged: _onTabChanged,
+              onCategorySelected: _onCategorySelected,
             ),
             Expanded(
               child: _buildContentArea(),
@@ -187,7 +186,6 @@ class _SearchScreenState extends State<SearchScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: const BottomNavigation(),
     );
   }
   

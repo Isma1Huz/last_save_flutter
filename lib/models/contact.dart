@@ -1,4 +1,3 @@
-// models/contact.dart (updated)
 import 'dart:typed_data';
 
 class Contact {

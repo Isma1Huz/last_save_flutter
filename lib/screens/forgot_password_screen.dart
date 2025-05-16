@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:last_save/screens/otp_verification_screen.dart';
-import 'package:last_save/utils/app_theme.dart';
 import 'package:last_save/widgets/ui/app_button.dart';
 import 'package:last_save/widgets/layout/app_layout.dart';
 import 'package:last_save/widgets/ui/app_text_field.dart';

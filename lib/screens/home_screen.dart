@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:last_save/screens/add_categories_contacts.dart';
 import 'package:last_save/widgets/home/categories_section.dart';
 import 'package:last_save/widgets/home/last_saved.dart';
 import 'package:last_save/widgets/home/relations.dart';
@@ -20,6 +21,15 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     searchController.dispose();
     super.dispose();
+  }
+
+  void onCategoryTap(category){
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddContactsToCategoryScreen(category: category),
+      ),
+    );
   }
 
   @override
@@ -49,11 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         const SizedBox(height: 2),
                         CategoriesSection(
-                          onCategoryTap: (category) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Selected category: ${category.title}')),
-                            );
-                          },
+                          onCategoryTap: onCategoryTap
                         ),
                         const SizedBox(height: 16),
                         const PlacesRelationsSection(),

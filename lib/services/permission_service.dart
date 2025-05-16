@@ -1,3 +1,5 @@
+// ignore_for_file: unused_field, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -63,7 +65,6 @@ class PermissionService {
     final status = await Permission.contacts.status;
     debugPrint('Contacts permission status: $status');
     
-    // Update cache
     await prefs.setBool(_contactsPermissionKey, status.isGranted);
     
     return {
@@ -234,7 +235,6 @@ class PermissionService {
     return result.isGranted;
   }
   
-  // Show dialog explaining why we need permission
   Future<bool> _showPermissionRationaleDialog({
     required BuildContext context,
     required String title,

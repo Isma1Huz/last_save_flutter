@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 /// Constants for the onboarding screens
 class OnboardingConstants {
-  /// Data for onboarding content pages
   static const List<Map<String, dynamic>> onboardingData = [
     {
       'title': 'Find Contacts in Seconds with Smart AI Search',
@@ -43,7 +42,6 @@ class OnboardingConstants {
     },
   ];
 
-  /// List of all image assets used in onboarding
   static const List<String> onboardingImages = [
     'assets/images/on1.jpg',
     'assets/images/on2.jpg',

@@ -26,7 +26,6 @@ class NotesWidget extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
           ),
-          // padding: const EdgeInsets.all(16),
           child: TextFormField(
             controller: notesController,
             decoration: const InputDecoration(

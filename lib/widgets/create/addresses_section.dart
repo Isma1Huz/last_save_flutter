@@ -101,7 +101,7 @@ class AddressField extends StatelessWidget {
   }
 }
 
-// Addresses Section Widget
+// Addresses Section
 class AddressesWidget extends StatelessWidget {
   final List<AddressField> addresses;
   final VoidCallback onAddAddress;

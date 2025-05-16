@@ -1,5 +1,6 @@
 // services/device_contacts_service.dart
 import 'dart:typed_data';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:last_save/models/contact.dart' as app;
@@ -16,34 +17,35 @@ class DeviceContactsService {
   List<app.Contact>? _deviceContacts;
   final PermissionService _permissionService = PermissionService();
   
-  // Check if contacts are loaded
+  final StreamController<bool> _contactsChangedController = StreamController<bool>.broadcast();
+  Stream<bool> get onContactsChanged => _contactsChangedController.stream;
+
   bool get isLoaded => _deviceContacts != null;
   
-  // Extract saved timestamp from contact events
+  void notifyContactsChanged() {
+    clearCache(); 
+    _contactsChangedController.add(true);
+  }
+
   DateTime? _extractSavedTimestamp(Contact contact) {
     try {
-      // Look for an event with a custom label that starts with "Saved on:"
       final savedEvent = contact.events.firstWhere(
         (event) => event.customLabel?.startsWith('Saved on:') ?? false,
-        orElse: () => Event(year: 0,month:  0, day: 0),
+        orElse: () => Event(year: 0, month: 0, day: 0),
       );
       
-      if (savedEvent.customLabel.startsWith('Saved on:')) {
-        // Extract the timestamp string from the custom label
+      if (savedEvent.customLabel?.startsWith('Saved on:') ?? false) {
         final timestampStr = savedEvent.customLabel!.substring('Saved on: '.length);
         try {
-          // Parse the timestamp string to a DateTime object
           return DateFormat('yyyy-MM-dd HH:mm:ss').parse(timestampStr);
         } catch (e) {
           debugPrint('Error parsing timestamp: $e');
-          // If we can't parse the timestamp, use the event date
           if (savedEvent.year! > 0 && savedEvent.month > 0 && savedEvent.day > 0) {
             return DateTime(savedEvent.year!, savedEvent.month, savedEvent.day);
           }
         }
       }
       
-      // If no saved timestamp found, return null
       return null;
     } catch (e) {
       debugPrint('Error extracting saved timestamp: $e');
@@ -117,7 +119,6 @@ class DeviceContactsService {
           photo = contactToUse.thumbnail;
         }
         
-        // Extract saved timestamp
         final savedTimestamp = _extractSavedTimestamp(contactToUse);
         
         return app.Contact(
@@ -127,7 +128,7 @@ class DeviceContactsService {
           email: email,
           categories: [], 
           photo: photo,
-          savedTimestamp: savedTimestamp, // Add the saved timestamp
+          savedTimestamp: savedTimestamp, 
         );
       }).toList());
       
@@ -145,5 +146,9 @@ class DeviceContactsService {
   
   void clearCache() {
     _deviceContacts = null;
+  }
+  
+  void dispose() {
+    _contactsChangedController.close();
   }
 }

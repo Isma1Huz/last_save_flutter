@@ -1,7 +1,15 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:last_save/models/category.dart';
+import 'package:last_save/screens/add_categories_contacts.dart';
 import 'package:last_save/screens/create_category_screen.dart';
+import 'package:last_save/screens/edit_category_screen.dart';
 import 'package:last_save/services/categories_service.dart';
+import 'package:last_save/widgets/categories/create_category_button.dart';
+import 'package:last_save/widgets/categories/delete_confirmation_dialog.dart';
+import 'package:last_save/widgets/common/category_slidable_item.dart';
 
 class CategoriesSection extends StatefulWidget {
   final Function(Category)? onCategoryTap;
@@ -15,9 +23,11 @@ class CategoriesSection extends StatefulWidget {
   State<CategoriesSection> createState() => _CategoriesSectionState();
 }
 
-class _CategoriesSectionState extends State<CategoriesSection> {
+class _CategoriesSectionState extends State<CategoriesSection> with SingleTickerProviderStateMixin {
   List<Category> _categories = [];
   bool _isLoading = true;
+  
+  final String _slidableGroup = 'categoryGroup';
 
   @override
   void initState() {
@@ -57,6 +67,116 @@ class _CategoriesSectionState extends State<CategoriesSection> {
     }
   }
 
+  Future<String> _getCategorySubtitle(Category category) async {
+    if (category.contactCount == 0) {
+      return 'No contacts';
+    }
+
+    try {
+      final contacts = await CategoriesService.getCategoryContacts(category.id);
+      
+      if (contacts.isEmpty) {
+        return 'No contacts';
+      }
+
+      final firstContact = contacts.first;
+      final otherCount = contacts.length - 1;
+      
+      if (otherCount > 0) {
+        return '${firstContact.name} and $otherCount others';
+      } else {
+        return firstContact.name;
+      }
+    } catch (e) {
+      return 'Error loading contacts';
+    }
+  }
+
+  List<SlidableAction> _buildCategoryActions(Category category) {
+    return [
+      SlidableAction(
+        onPressed: (_) {
+          _navigateToAddContacts(category);
+        },
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        icon: Icons.person_add,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(12),
+          bottomLeft: Radius.circular(12),
+        ),
+      ),
+      SlidableAction(
+        onPressed: (_) {
+          _navigateToEditCategory(category);
+        },
+        backgroundColor: Colors.amber,
+        foregroundColor: Colors.white,
+        icon: Icons.edit,
+      ),
+      SlidableAction(
+        onPressed: (_) {
+          _showDeleteConfirmation(category);
+        },
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
+        icon: Icons.delete,
+        borderRadius: const BorderRadius.only(
+          topRight: Radius.circular(12),
+          bottomRight: Radius.circular(12),
+        ),
+      ),
+    ];
+  }
+
+  void _navigateToAddContacts(Category category) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddContactsToCategoryScreen(category: category),
+      ),
+    ).then((_) {
+      _loadCategories();
+    });
+  }
+
+  void _navigateToEditCategory(Category category) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditCategoryScreen(category: category),
+      ),
+    ).then((result) {
+      if (result != null) {
+        _loadCategories();
+      }
+    });
+  }
+
+  void _showDeleteConfirmation(Category category) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return DeleteConfirmationDialog(
+          category: category,
+          onConfirm: () async {
+            try {
+              await CategoriesService.deleteCategory(category.id);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Category "${category.title}" deleted')),
+              );
+              _loadCategories();
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to delete category: $e')),
+              );
+            }
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -81,124 +201,45 @@ class _CategoriesSectionState extends State<CategoriesSection> {
             ),
           )
         else
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
+          ClipRRect(
               borderRadius: BorderRadius.circular(12),
-            ),
-
-            child: Column(
-              children: [
-                ..._categories.map((category) => CategoryListItem(
-                      category: category,
-                      onTap: () {
-                        if (widget.onCategoryTap != null) {
-                          widget.onCategoryTap!(category);
-                        }
-                      },
-                    )),
-                CreateCategoryButton(
-                  onTap: () => _navigateToCreateCategory(context),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 12),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
                 ),
-              ],
+                child: SlidableAutoCloseBehavior(
+                  closeWhenOpened: true,
+                  closeWhenTapped: true,
+                  child: Column(
+                    children: [
+                      ..._categories.map((category) => FutureBuilder<String>(
+                        future: _getCategorySubtitle(category),
+                        builder: (context, snapshot) {
+                          final subtitle = snapshot.data ?? 'Loading...';
+                          return CategorySlidableItem(
+                            category: category,
+                            subtitle: subtitle,
+                            onTap: () {
+                              if (widget.onCategoryTap != null) {
+                                widget.onCategoryTap!(category);
+                              }
+                            },
+                            groupTag: _slidableGroup,
+                            actions: _buildCategoryActions(category),
+                          );
+                        },
+                      )),
+                      CreateCategoryButton(
+                        onTap: () => _navigateToCreateCategory(context),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+
       ],
-    );
-  }
-}
-
-class CategoryListItem extends StatelessWidget {
-  final Category category;
-  final VoidCallback onTap;
-
-  const CategoryListItem({
-    Key? key, 
-    required this.category, 
-    required this.onTap,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    String subtitle = '';
-    
-    if (category.contactCount == 0) {
-      subtitle = 'James smith and ${category.contactCount - 1} others';
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(0), 
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8), 
-        leading: const CircleAvatar(
-          backgroundColor: Colors.black,
-          radius: 16, 
-          child: Icon(
-            Icons.person, 
-            color: Colors.white,
-            size: 16, 
-          ),
-        ),
-        title: Text(
-          category.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w500, 
-            fontSize: 14, 
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(
-            color: Colors.grey.shade600,
-            fontSize: 12,
-          ),
-        ),
-        onTap: onTap,
-      ),
-    );
-  }
-}
-
-class CreateCategoryButton extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const CreateCategoryButton({
-    Key? key, 
-    required this.onTap,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(0), 
-        
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8), 
-        leading: CircleAvatar(
-          backgroundColor: Colors.grey.shade300,
-          radius: 16, 
-          child: const Icon(
-            Icons.add,
-            color: Colors.black,
-            size: 16, 
-          ),
-        ),
-        title: const Text(
-          'Create category',
-          style: TextStyle(
-            fontWeight: FontWeight.w500, 
-            fontSize: 14, 
-          ),
-        ),
-        onTap: onTap,
-      ),
     );
   }
 }

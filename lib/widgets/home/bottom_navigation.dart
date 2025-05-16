@@ -1,7 +1,8 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:last_save/screens/home_screen.dart';
 import 'package:last_save/screens/search_screen.dart';
-// import 'package:last_save/screens/menu_screen.dart';
 
 class BottomNavigation extends StatefulWidget {
   const BottomNavigation({Key? key}) : super(key: key);
@@ -16,8 +17,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
   final List<Widget> _pages = const [
     HomeScreen(),
     SearchScreen(), 
-    Placeholder()// Create this as a placeholder if not already present
-    // MenuScreen(),   // Create this as a placeholder if not already present
+    Placeholder()
   ];
 
   void _onItemTapped(int index) {

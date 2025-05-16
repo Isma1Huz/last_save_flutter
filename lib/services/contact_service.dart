@@ -4,8 +4,7 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:last_save/widgets/create/addresses_section.dart';
 import 'package:last_save/widgets/create/email_section.dart';
 import 'package:last_save/widgets/create/phone_number.dart';
-import 'package:intl/intl.dart'; // Add this import for date formatting
-
+import 'package:intl/intl.dart'; 
 class ContactsService {
   static Future<bool> saveContact({
     required BuildContext context,
@@ -21,7 +20,6 @@ class ContactsService {
     required File? profileImage,
   }) async {
     try {
-      // Request contacts permission
       if (!await FlutterContacts.requestPermission()) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Contacts permission denied'))
@@ -29,14 +27,11 @@ class ContactsService {
         return false;
       }
       
-      // Create a new contact
       final newContact = Contact();
       
-      // Set name
       newContact.name.first = firstName;
       newContact.name.last = lastName;
       
-      // Set company
       if (company.isNotEmpty) {
         newContact.organizations = [
           Organization(company: company)
@@ -47,14 +42,12 @@ class ContactsService {
       final now = DateTime.now();
       final formattedDateTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
       
-      // Add timestamp as an event with a special label
       newContact.events = [
         Event(
           year:  now.year, 
           month: now.month, 
           day: now.day,
           label: EventLabel.other,
-          // Use the custom label to indicate this is our saved timestamp
           customLabel: "Saved on: $formattedDateTime"
         )
       ];
@@ -65,12 +58,10 @@ class ContactsService {
           (category != null)) {
         String noteText = notes ?? '';
         
-        // Add meeting event info to notes if available
         if (meetingEvent != null && meetingEvent.isNotEmpty) {
           noteText += '\n\nWhere we met: $meetingEvent';
         }
         
-        // Add category to notes if available
         if (category != null) {
           noteText += '\n\nCategory: $category';
         }
@@ -78,7 +69,6 @@ class ContactsService {
         newContact.notes = [Note(noteText)];
       }
       
-      // Set phone numbers
       newContact.phones = phoneNumbers.map((phoneField) {
         final phoneType = phoneField.getPhoneType().toLowerCase();
         PhoneLabel label;
@@ -103,7 +93,6 @@ class ContactsService {
         return Phone(phoneField.getPhoneNumber(), label: label);
       }).toList();
       
-      // Set emails
       newContact.emails = emails.map((emailField) {
         final emailType = emailField.getEmailType().toLowerCase();
         EmailLabel label;
@@ -122,7 +111,6 @@ class ContactsService {
         return Email(emailField.getEmail(), label: label);
       }).toList();
       
-      // Set addresses
       newContact.addresses = addresses.map<Address>((addressField) {
         final data = addressField.getAddressData();
         final addressType = data['type']?.toLowerCase() ?? 'home';
@@ -139,7 +127,6 @@ class ContactsService {
             label = AddressLabel.other;
         }
         
-        // Create the full address string for the required positional parameter
         final street = data['street'] ?? '';
         final city = data['city'] ?? '';
         final state = data['state'] ?? '';
@@ -149,9 +136,8 @@ class ContactsService {
             .where((part) => part.isNotEmpty)
             .join(', ');
         
-        // The Address constructor requires a positional parameter for the full address
         return Address(
-          fullAddress,  // Required positional parameter
+          fullAddress, 
           label: label,
           street: street,
           city: city,
@@ -160,13 +146,11 @@ class ContactsService {
         );
       }).toList();
       
-      // Set photo
       if (profileImage != null) {
         final bytes = await profileImage.readAsBytes();
         newContact.photo = bytes;
       }
       
-      // Save contact to device
       await newContact.insert();
       
       return true;
@@ -179,7 +163,6 @@ class ContactsService {
     }
   }
   
-  // Helper method to retrieve the saved timestamp from a contact
   static String? getSavedTimestamp(Contact contact) {
     final savedEvent = contact.events.firstWhere(
       (event) => event.customLabel?.startsWith('Saved on:') ?? false,

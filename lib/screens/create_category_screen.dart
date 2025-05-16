@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:last_save/models/category.dart';
 import 'package:last_save/services/categories_service.dart';
