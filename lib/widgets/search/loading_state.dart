@@ -5,13 +5,23 @@ class LoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    final theme = Theme.of(context);
+    
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('Loading contacts...'),
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Loading contacts...',
+            style: TextStyle(
+              color: theme.textTheme.bodyLarge?.color,
+              fontSize: 16,
+            ),
+          ),
         ],
       ),
     );

@@ -61,35 +61,42 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    // Define theme-aware colors
+    final backgroundColor = isDark ? theme.scaffoldBackgroundColor : const Color(0xFFE8ECF4);
+    final primaryColor = theme.colorScheme.primary;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFE8ECF4),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFE8ECF4),
+        backgroundColor: backgroundColor,
         title: const Center(
           child: Text('Create Category'),
         ),
         actions: [
           Container(
-                margin: const EdgeInsets.only(right: 10),
-                child:TextButton(
-                  onPressed: _isLoading ? null : _saveCategory,
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    backgroundColor: const Color(0xFF00BCD4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Save',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
+            margin: const EdgeInsets.only(right: 10),
+            child: TextButton(
+              onPressed: _isLoading ? null : _saveCategory,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                backgroundColor: primaryColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              )
+              ),
+              child: Text(
+                'Save',
+                style: TextStyle(
+                  color: theme.colorScheme.onPrimary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          )
         ],
       ),
       body: Form(
@@ -97,7 +104,7 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
-            const CategoryIconSelector(),
+            CategoryIconSelector(isDark: isDark),
             const SizedBox(height: 24),
             CategoryNameField(controller: _titleController),
             const SizedBox(height: 16),
@@ -119,22 +126,26 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
 }
 
 class CategoryIconSelector extends StatelessWidget {
-  const CategoryIconSelector({Key? key}) : super(key: key);
+  final bool isDark;
+  
+  const CategoryIconSelector({Key? key, required this.isDark}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Center(
       child: Container(
         width: 80,
         height: 80,
         decoration: BoxDecoration(
-          color: Colors.grey.shade200,
+          color: isDark ? theme.cardColor : Colors.grey.shade200,
           shape: BoxShape.circle,
         ),
-        child: const Icon(
+        child: Icon(
           Icons.person,
           size: 40,
-          color: Colors.black,
+          color: isDark ? theme.iconTheme.color : Colors.black,
         ),
       ),
     );
@@ -148,11 +159,18 @@ class CategoryNameField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return TextFormField(
       controller: controller,
-      decoration: const InputDecoration(
+      style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+      decoration: InputDecoration(
         labelText: 'Category Name',
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
+        labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+        filled: true,
+        fillColor: theme.inputDecorationTheme.fillColor ?? 
+                  (theme.brightness == Brightness.dark ? theme.cardColor : Colors.white),
       ),
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
@@ -171,11 +189,18 @@ class CategoryDescriptionField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return TextFormField(
       controller: controller,
-      decoration: const InputDecoration(
+      style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+      decoration: InputDecoration(
         labelText: 'Description (Optional)',
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
+        labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+        filled: true,
+        fillColor: theme.inputDecorationTheme.fillColor ?? 
+                  (theme.brightness == Brightness.dark ? theme.cardColor : Colors.white),
       ),
       maxLines: 3,
     );
@@ -194,14 +219,18 @@ class IconSelectionGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Select Icon',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            color: theme.textTheme.titleMedium?.color,
           ),
         ),
         const SizedBox(height: 12),
@@ -216,19 +245,25 @@ class IconSelectionGrid extends StatelessWidget {
           itemCount: Category.availableIcons.length,
           itemBuilder: (context, index) {
             final isSelected = index == selectedIconIndex;
+            final primaryColor = theme.colorScheme.primary;
+            
             return GestureDetector(
               onTap: () => onIconSelected(index),
               child: Container(
                 decoration: BoxDecoration(
-                  color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : Colors.grey.shade100,
+                  color: isSelected 
+                      ? primaryColor.withOpacity(0.1) 
+                      : isDark ? theme.cardColor : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(12),
                   border: isSelected
-                      ? Border.all(color: Theme.of(context).primaryColor, width: 2)
+                      ? Border.all(color: primaryColor, width: 2)
                       : null,
                 ),
                 child: Icon(
                   Category.availableIcons[index],
-                  color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade700,
+                  color: isSelected 
+                      ? primaryColor 
+                      : isDark ? theme.iconTheme.color : Colors.grey.shade700,
                   size: 28,
                 ),
               ),

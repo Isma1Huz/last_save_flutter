@@ -25,6 +25,8 @@ class _SearchInputState extends State<SearchInput> {
   bool _isSearchActive = false;
   final FocusNode _focusNode = FocusNode();
 
+  static const Color micButtonColor = Color(0xFF3ED2D0);
+
   @override
   void initState() {
     super.initState();
@@ -81,50 +83,84 @@ class _SearchInputState extends State<SearchInput> {
     }
   }
 
+  Widget _buildMicButton() {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: const BoxDecoration(
+        color: micButtonColor,
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        _isListening ? Icons.mic_none : Icons.mic,
+        color: Colors.white,
+        size: 20,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    const containerColor = Colors.white;
+    
+    final searchInputColor = isDark ? theme.cardColor :  const Color(0xFFE8ECF4);
+    
+    final iconColor = isDark ? theme.iconTheme.color : Colors.grey[600];
+    final textColor = isDark ? theme.textTheme.bodyMedium?.color : Colors.grey[600];
+    
     if (_isSearchActive) {
       return Container(
-        color: Colors.grey[50],
+        color: isDark ? theme.scaffoldBackgroundColor : containerColor,
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-        child: TextField(
-          controller: widget.controller,
-          focusNode: _focusNode,
-          decoration: InputDecoration(
-            hintText: 'Search contacts',
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(vertical: 12),
-            prefixIcon: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: _deactivateSearch,
-            ),
-            suffixIcon: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (widget.controller.text.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      widget.controller.clear();
-                      widget.onClear();
-                    },
-                  ),
-                IconButton(
-                  icon: Icon(
-                    _isListening ? Icons.mic_none : Icons.mic,
-                    color: Colors.grey[600],
-                  ),
-                  onPressed: _startVoiceInput,
-                ),
-              ],
-            ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: searchInputColor,
+            borderRadius: BorderRadius.circular(8),
           ),
-          onChanged: widget.onChanged,
+          child: TextField(
+            controller: widget.controller,
+            focusNode: _focusNode,
+            style: TextStyle(color: textColor),
+            decoration: InputDecoration(
+              hintText: 'Search contacts',
+              hintStyle: TextStyle(color: isDark ? theme.hintColor : Colors.grey[600]),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              prefixIcon: IconButton(
+                icon: Icon(Icons.arrow_back, color: iconColor),
+                onPressed: _deactivateSearch,
+              ),
+              suffixIcon: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (widget.controller.text.isNotEmpty)
+                    IconButton(
+                      icon: Icon(Icons.clear, color: iconColor),
+                      onPressed: () {
+                        widget.controller.clear();
+                        widget.onClear();
+                      },
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: GestureDetector(
+                      onTap: _startVoiceInput,
+                      child: _buildMicButton(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            onChanged: widget.onChanged,
+          ),
         ),
       );
-  } else {
+    } else {
       return Container(
-        color: Colors.grey[50],
+        color: isDark ? theme.scaffoldBackgroundColor : containerColor,
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: GestureDetector(
           onTap: _activateSearch,
@@ -132,31 +168,33 @@ class _SearchInputState extends State<SearchInput> {
             height: 48,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: searchInputColor,
               borderRadius: BorderRadius.circular(24),
             ),
             child: Row(
               children: [
-                Icon(Icons.search, color: Colors.grey[600]),
+                Icon(Icons.search, color: iconColor),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Search contacts',
                     style: TextStyle(
-                      color: Colors.grey[600],
+                      color: textColor,
                       fontSize: 16,
                     ),
                   ),
                 ),
-                IconButton(
-                  icon: Icon(
-                    _isListening ? Icons.mic_none : Icons.mic,
-                    color: Colors.grey[600],
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  onPressed: _startVoiceInput,
+                GestureDetector(
+                  onTap: _startVoiceInput,
+                  child: _buildMicButton(),
                 ),
+                if (widget.onMoreTap != null) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: widget.onMoreTap,
+                    child: Icon(Icons.more_vert, color: iconColor),
+                  ),
+                ],
               ],
             ),
           ),

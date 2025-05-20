@@ -11,7 +11,7 @@ class DynamicListItem extends StatelessWidget {
 
   final String? timestamp;
   final String? badge;
-  final Color badgeColor;
+  final Color? badgeColor;
   final bool showChevron;
   final String? groupTag;
 
@@ -25,7 +25,7 @@ class DynamicListItem extends StatelessWidget {
     required this.onTap,
     this.timestamp,
     this.badge,
-    this.badgeColor = Colors.blue,
+    this.badgeColor,
     this.showChevron = false,
     this.groupTag,
     this.actions,
@@ -62,12 +62,19 @@ class DynamicListItem extends StatelessWidget {
   }
 
   Widget _buildListTile(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    // Get appropriate colors from theme
+    final backgroundColor = isDark ? theme.cardColor : Colors.white;
+    final dividerColor = isDark ? theme.dividerColor : Colors.grey.shade200;
+    
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: backgroundColor,
         border: Border(
           bottom: BorderSide(
-            color: Colors.grey.shade200,
+            color: dividerColor,
             width: 0.5,
           ),
         ),
@@ -80,9 +87,10 @@ class DynamicListItem extends StatelessWidget {
         leading: leading,
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: 14, 
+            fontSize: 14,
+            color: theme.textTheme.titleMedium?.color,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -96,6 +104,17 @@ class DynamicListItem extends StatelessWidget {
 
   Widget? _buildSubtitle(BuildContext context) {
     if (subtitle == null && timestamp == null) return null;
+    
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    final subtitleColor = isDark 
+        ? theme.textTheme.bodySmall?.color 
+        : Colors.grey.shade600;
+    
+    final timestampColor = isDark 
+        ? theme.textTheme.bodySmall?.color?.withOpacity(0.7) 
+        : Colors.grey.shade500;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +123,7 @@ class DynamicListItem extends StatelessWidget {
           Text(
             subtitle!,
             style: TextStyle(
-              color: Colors.grey.shade600,
+              color: subtitleColor,
               fontSize: 12,
               fontWeight: FontWeight.w400,
             ),
@@ -115,7 +134,7 @@ class DynamicListItem extends StatelessWidget {
           Text(
             timestamp!,
             style: TextStyle(
-              color: Colors.grey.shade500,
+              color: timestampColor,
               fontSize: 12,
             ),
           ),
@@ -125,29 +144,30 @@ class DynamicListItem extends StatelessWidget {
 
   Widget? _buildTrailing(BuildContext context) {
     List<Widget> trailingWidgets = [];
-
+    
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    final effectiveBadgeColor = badgeColor ?? theme.colorScheme.primary;
+    
     if (badge != null) {
       trailingWidgets.add(
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
           decoration: BoxDecoration(
-            color: badgeColor.withOpacity(0.1),
+            color: effectiveBadgeColor.withOpacity(isDark ? 0.2 : 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
             badge!,
             style: TextStyle(
               fontSize: 12,
-              color: badgeColor,
+              color: effectiveBadgeColor,
               fontWeight: FontWeight.w500,
             ),
           ),
         ),
       );
-    }
-
-    if (showChevron) {
-      trailingWidgets.add(const Icon(Icons.chevron_right, size: 18));
     }
 
     if (trailingWidgets.isEmpty) return null;

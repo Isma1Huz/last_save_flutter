@@ -19,15 +19,19 @@ class PhoneNumberField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Row(
       children: [
         Expanded(
           flex: 3,
           child: TextFormField(
             controller: controller,
-            decoration: const InputDecoration(
+            style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+            decoration: InputDecoration(
               labelText: 'Phone number',
-              border: UnderlineInputBorder(),
+              labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+              border: const UnderlineInputBorder(),
             ),
             keyboardType: TextInputType.phone,
           ),
@@ -36,10 +40,13 @@ class PhoneNumberField extends StatelessWidget {
         Expanded(
           flex: 2,
           child: DropdownButtonFormField<String>(
-            decoration: const InputDecoration(
-              border: UnderlineInputBorder(),
+            decoration: InputDecoration(
+              border: const UnderlineInputBorder(),
+              labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
             ),
             value: selectedType,
+            dropdownColor: theme.cardColor,
+            style: TextStyle(color: theme.textTheme.bodyLarge?.color),
             items: phoneTypes.map((String type) {
               return DropdownMenuItem<String>(
                 value: type,
@@ -72,14 +79,18 @@ class PhoneNumbersWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Phone numbers',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
+            color: theme.textTheme.titleMedium?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -91,7 +102,10 @@ class PhoneNumbersWidget extends StatelessWidget {
                   children: [
                     Expanded(child: phoneNumbers[index]),
                     IconButton(
-                      icon: const Icon(Icons.remove_circle_outline),
+                      icon: Icon(
+                        Icons.remove_circle_outline,
+                        color: theme.iconTheme.color,
+                      ),
                       onPressed: () => onRemovePhoneNumber(index),
                     ),
                   ],
@@ -102,10 +116,10 @@ class PhoneNumbersWidget extends StatelessWidget {
         }),
         TextButton.icon(
           onPressed: onAddPhoneNumber,
-          icon: const Icon(Icons.add, color: Color(0xFF00BCD4)),
-          label: const Text(
+          icon: Icon(Icons.add, color: primaryColor),
+          label: Text(
             'Add phone number',
-            style: TextStyle(color: Color(0xFF00BCD4)),
+            style: TextStyle(color: primaryColor),
           ),
         ),
       ],

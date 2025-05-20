@@ -15,12 +15,17 @@ class CategoryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return DropdownButtonFormField<String>(
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         labelText: 'Category',
-        border: UnderlineInputBorder(),
+        labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+        border: const UnderlineInputBorder(),
       ),
       value: selectedCategory,
+      dropdownColor: theme.cardColor,
+      style: TextStyle(color: theme.textTheme.bodyLarge?.color),
       items: categories.map((String category) {
         return DropdownMenuItem<String>(
           value: category,
@@ -43,22 +48,25 @@ class LocationWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Current Location',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
+            color: theme.textTheme.titleMedium?.color,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           currentAddress ?? 'Fetching location...',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
-            color: Colors.grey,
+            color: theme.textTheme.bodySmall?.color,
           ),
         ),
       ],
@@ -77,11 +85,15 @@ class MeetingEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return TextFormField(
       controller: meetingEventController,
-      decoration: const InputDecoration(
+      style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+      decoration: InputDecoration(
         labelText: 'Where we met',
-        border: UnderlineInputBorder(),
+        labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+        border: const UnderlineInputBorder(),
       ),
     );
   }

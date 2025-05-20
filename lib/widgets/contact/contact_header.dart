@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:last_save/models/contact.dart';
-import 'package:last_save/utils/app_theme.dart';
 
 class ContactHeader extends StatelessWidget {
   final Contact contact;
@@ -9,68 +8,56 @@ class ContactHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textColor = Colors.white;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 100,
-            height: 100,
+            width: 120,
+            height: 120,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.primaryColor.withOpacity(0.2),
+              color: isDarkMode 
+                  ? Colors.grey.shade800 
+                  : Colors.white.withOpacity(0.2),
             ),
             child: contact.photo != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
+                    borderRadius: BorderRadius.circular(60),
                     child: Image.memory(
                       contact.photo!,
                       fit: BoxFit.cover,
-                      width: 100,
-                      height: 100,
+                      width: 120,
+                      height: 120,
                     ),
                   )
                 : Center(
                     child: Text(
                       contact.name.isNotEmpty ? contact.name[0].toUpperCase() : '?',
-                      style: const TextStyle(
-                        color: AppTheme.primaryColor,
-                        fontSize: 40,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 48,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
           ),
+          
           const SizedBox(height: 16),
+          
           Text(
             contact.name,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
+              color: textColor,
             ),
           ),
-          if (contact.categories.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Wrap(
-                spacing: 4,
-                children: contact.categories.map((categoryId) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      categoryId == '1' ? 'Recently saved' : 'Business',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppTheme.primaryColor,
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
+                  
         ],
       ),
     );

@@ -14,15 +14,20 @@ class BasicInfoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 6),
         TextFormField(
+          textCapitalization: TextCapitalization.words,
           controller: firstNameController,
-          decoration: const InputDecoration(
+          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+          decoration: InputDecoration(
             labelText: 'First name',
-            border: UnderlineInputBorder(),
+            labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+            border: const UnderlineInputBorder(),
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -33,18 +38,24 @@ class BasicInfoWidget extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         TextFormField(
+          textCapitalization: TextCapitalization.words,
           controller: lastNameController,
-          decoration: const InputDecoration(
+          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+          decoration: InputDecoration(
             labelText: 'Last name',
-            border: UnderlineInputBorder(),
+            labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+            border: const UnderlineInputBorder(),
           ),
         ),
         const SizedBox(height: 14),
         TextFormField(
+          textCapitalization: TextCapitalization.words,
           controller: companyController,
-          decoration: const InputDecoration(
+          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+          decoration: InputDecoration(
             labelText: 'Company',
-            border: UnderlineInputBorder(),
+            labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+            border: const UnderlineInputBorder(),
           ),
         ),
       ],

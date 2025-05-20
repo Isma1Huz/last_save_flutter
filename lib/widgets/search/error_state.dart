@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:last_save/utils/app_theme.dart';
 
 class ErrorState extends StatelessWidget {
   final String errorMessage;
@@ -17,21 +16,24 @@ class ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.error_outline,
             size: 48,
-            color: Colors.red,
+            color: theme.colorScheme.error,
           ),
           const SizedBox(height: 16),
           Text(
             errorMessage,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
+              color: theme.textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(height: 24),
@@ -39,24 +41,24 @@ class ErrorState extends StatelessWidget {
             ElevatedButton(
               onPressed: onOpenSettings,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
               child: const Text(
                 'Open Settings',
-                style: TextStyle(color: Colors.white),
               ),
             )
           else
             ElevatedButton(
               onPressed: onRetry,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
               child: const Text(
                 'Try Again',
-                style: TextStyle(color: Colors.white),
               ),
             ),
         ],

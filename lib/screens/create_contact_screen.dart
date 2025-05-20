@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:last_save/services/contact_service.dart';
+import 'package:last_save/services/device_contacts_service.dart';
 import 'package:last_save/widgets/create/addresses_section.dart';
 import 'package:last_save/widgets/create/basic_info.dart';
 import 'package:last_save/widgets/create/categories_location.dart';
@@ -150,8 +151,10 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
           meetingEvent: _meetingEventController.text,
           profileImage: _profileImage,
         );
-        
         if (success) {
+          //refresh contact list 
+          DeviceContactsService().notifyContactsChanged();
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Contact saved successfully to device!'))
           );
@@ -167,57 +170,64 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    // Define theme-aware colors
+    final backgroundColor = isDark ? theme.scaffoldBackgroundColor : const Color(0xFFE8ECF4);
+    final primaryColor = theme.colorScheme.primary;
+    final textColor = isDark ? Colors.white : Colors.black;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFE8ECF4),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFE8ECF4),
+        backgroundColor: backgroundColor,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Center(
+        title: Center(
           child: Text(
-          'Create contact',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
-        ),
+            'Create contact',
+            style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+          ),
         ),
         actions: [
           _isSaving
-              ? const Padding(
-                  padding: EdgeInsets.all(8.0),
+              ? Padding(
+                  padding: const EdgeInsets.all(8.0),
                   child: Center(
                     child: SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Color(0xFF00BCD4),
+                        color: primaryColor,
                       ),
                     ),
                   ),
                 )
               : Container(
-                margin: const EdgeInsets.only(right: 10),
-                child:TextButton(
-                  onPressed: _saveContact,
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    backgroundColor: const Color(0xFF00BCD4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  margin: const EdgeInsets.only(right: 10),
+                  child: TextButton(
+                    onPressed: _saveContact,
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      backgroundColor: primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Save',
+                      style: TextStyle(
+                        color: theme.colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                  child: const Text(
-                    'Save',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              )
-
+                )
         ],
       ),
       body: SingleChildScrollView(
@@ -237,17 +247,17 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
                 const SizedBox(height: 12),
                 
                 // Contact Details Section
-                const Text(
+                Text(
                   'Contact details',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
+                    color: theme.textTheme.titleLarge?.color,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Container(
                   decoration: BoxDecoration(
-                    // color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -291,19 +301,16 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
                         categories: _categories,
                         onCategoryChanged: _onCategoryChanged,
                       ),
-                      
                       // Current Location
                       const SizedBox(height: 16),
                       LocationWidget(
                         currentAddress: _currentAddress,
                       ),
-                      
                       // Meeting Event
                       const SizedBox(height: 16),
                       MeetingEventWidget(
                         meetingEventController: _meetingEventController,
                       ),
-
                       // Notes Section
                       const SizedBox(height: 24),
                       NotesWidget(

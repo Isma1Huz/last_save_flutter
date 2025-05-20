@@ -10,9 +10,12 @@ class CreateCategoryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? theme.cardColor : const Color(0xFFF8F9FC),
         borderRadius: BorderRadius.circular(0), 
       ),
       child: ListTile(

@@ -43,9 +43,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 ),
                 const SizedBox(height: 16),
                 RichText(
-                  text: TextSpan(
+                  text: const TextSpan(
                     children: [
-                      const TextSpan(
+                      TextSpan(
                         text: 'Last',
                         style: TextStyle(
                           color: Colors.black,

@@ -1,9 +1,9 @@
-// services/device_contacts_service.dart
 import 'dart:typed_data';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:last_save/models/contact.dart' as app;
+import 'package:last_save/services/favorite_service.dart';
 import 'package:last_save/services/permission_service.dart';
 import 'package:permission_handler/permission_handler.dart' as ph;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,31 +27,34 @@ class DeviceContactsService {
     _contactsChangedController.add(true);
   }
 
-  DateTime? _extractSavedTimestamp(Contact contact) {
-    try {
-      final savedEvent = contact.events.firstWhere(
-        (event) => event.customLabel?.startsWith('Saved on:') ?? false,
-        orElse: () => Event(year: 0, month: 0, day: 0),
-      );
-      
-      if (savedEvent.customLabel?.startsWith('Saved on:') ?? false) {
-        final timestampStr = savedEvent.customLabel!.substring('Saved on: '.length);
-        try {
-          return DateFormat('yyyy-MM-dd HH:mm:ss').parse(timestampStr);
-        } catch (e) {
-          debugPrint('Error parsing timestamp: $e');
-          if (savedEvent.year! > 0 && savedEvent.month > 0 && savedEvent.day > 0) {
-            return DateTime(savedEvent.year!, savedEvent.month, savedEvent.day);
-          }
+DateTime? _extractSavedTimestamp(Contact contact) {
+  try {
+    final savedEvent = contact.events.firstWhere(
+      (event) => event.customLabel?.startsWith('Saved on:') ?? false,
+      orElse: () => Event(year: 0, month: 0, day: 0),
+    );
+    
+    if (savedEvent.customLabel?.startsWith('Saved on:') ?? false) {
+      final timestampStr = savedEvent.customLabel!.substring('Saved on: '.length);
+      try {
+        return DateFormat('yyyy-MM-dd HH:mm:ss').parse(timestampStr);
+      } catch (e) {
+        debugPrint('Error parsing timestamp: $e');
+        if (savedEvent.year! > 0 && savedEvent.month > 0 && savedEvent.day > 0) {
+          return DateTime(savedEvent.year!, savedEvent.month, savedEvent.day);
         }
       }
-      
-      return null;
-    } catch (e) {
-      debugPrint('Error extracting saved timestamp: $e');
-      return null;
     }
+
+
+
+    return null;
+  } catch (e) {
+    debugPrint('Error extracting saved timestamp: $e');
+    return null;
   }
+}
+
   
   Future<List<app.Contact>> getDeviceContacts() async {
     if (_deviceContacts != null) {
@@ -92,6 +95,7 @@ class DeviceContactsService {
         debugPrint('No contacts found on device');
         return [];
       }
+
       
       _deviceContacts = await Future.wait(deviceContacts.map((contact) async {
         Contact? fullContact;
@@ -120,7 +124,9 @@ class DeviceContactsService {
         }
         
         final savedTimestamp = _extractSavedTimestamp(contactToUse);
-        
+
+        final isFavorite = FavoritesService().isFavorite(contactToUse.id);
+
         return app.Contact(
           id: contactToUse.id,
           name: contactToUse.displayName,
@@ -129,6 +135,7 @@ class DeviceContactsService {
           categories: [], 
           photo: photo,
           savedTimestamp: savedTimestamp, 
+          isFavorite: await isFavorite,
         );
       }).toList());
       

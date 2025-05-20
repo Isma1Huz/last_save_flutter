@@ -12,6 +12,7 @@ class Contact {
   final String? meetingEvent;
   final String? notes;
   final String? company;
+  final bool isFavorite;
   final List<Map<String, String>>? addresses;
 
   Contact({
@@ -26,6 +27,7 @@ class Contact {
     this.meetingEvent,
     this.notes,
     this.company,
+    this.isFavorite = false, 
     this.addresses,
   });
 
@@ -41,6 +43,7 @@ class Contact {
     String? meetingEvent,
     String? notes,
     String? company,
+    bool? isFavorite, 
     List<Map<String, String>>? addresses,
   }) {
     return Contact(
@@ -55,6 +58,7 @@ class Contact {
       meetingEvent: meetingEvent ?? this.meetingEvent,
       notes: notes ?? this.notes,
       company: company ?? this.company,
+      isFavorite: isFavorite ?? this.isFavorite, 
       addresses: addresses ?? this.addresses,
     );
   }

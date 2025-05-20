@@ -63,11 +63,24 @@ class _FilterTabsState extends State<FilterTabs> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       height: 48,
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      color: isDark ? theme.scaffoldBackgroundColor : Colors.white,
       child: _isLoading
-          ? const Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)))
+          ? Center(
+              child: SizedBox(
+                height: 20, 
+                width: 20, 
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+                ),
+              ),
+            )
           : SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -85,6 +98,27 @@ class _FilterTabsState extends State<FilterTabs> {
 
   Widget _buildTab(int index, String label, {String? categoryId}) {
     final isSelected = _selectedTab == index;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    // Define colors based on theme
+    final selectedBgColor = isDark 
+        ? theme.colorScheme.primary.withOpacity(0.3) 
+        : theme.colorScheme.primary.withOpacity(0.1);
+    
+    final unselectedBgColor = isDark 
+        ? theme.cardColor 
+        : Colors.grey[200];
+    
+    final selectedTextColor = theme.colorScheme.primary;
+    
+    final unselectedTextColor = isDark 
+        ? theme.textTheme.bodyMedium?.color 
+        : Colors.grey[800];
+    
+    final borderColor = isDark 
+        ? theme.dividerColor 
+        : Colors.grey[300]!;
     
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -103,17 +137,17 @@ class _FilterTabsState extends State<FilterTabs> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.blue[100] : Colors.grey[200],
+            color: isSelected ? selectedBgColor : unselectedBgColor,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.grey[300]!,
+              color: borderColor,
               width: 1,
             ),
           ),
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.blue[800] : Colors.grey[800],
+              color: isSelected ? selectedTextColor : unselectedTextColor,
               fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
             ),
           ),
@@ -123,6 +157,21 @@ class _FilterTabsState extends State<FilterTabs> {
   }
 
   Widget _buildAddButton(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    final bgColor = isDark 
+        ? theme.cardColor 
+        : Colors.grey[200];
+    
+    final iconColor = isDark 
+        ? theme.iconTheme.color 
+        : Colors.grey[800];
+    
+    final borderColor = isDark 
+        ? theme.dividerColor 
+        : Colors.grey[300]!;
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
       child: InkWell(
@@ -131,17 +180,17 @@ class _FilterTabsState extends State<FilterTabs> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+            color: bgColor,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.grey[300]!,
+              color: borderColor,
               width: 1,
             ),
           ),
           child: Icon(
             Icons.add,
             size: 18,
-            color: Colors.grey[800],
+            color: iconColor,
           ),
         ),
       ),

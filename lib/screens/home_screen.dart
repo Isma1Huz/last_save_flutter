@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:last_save/screens/add_categories_contacts.dart';
+import 'package:last_save/screens/view_categories_contact.dart';
 import 'package:last_save/widgets/home/categories_section.dart';
 import 'package:last_save/widgets/home/last_saved.dart';
 import 'package:last_save/widgets/home/relations.dart';
@@ -8,7 +9,9 @@ import 'package:last_save/widgets/home/bottom_navigation.dart';
 import 'package:last_save/screens/create_contact_screen.dart'; 
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key, this.onCategoryTap});
+
+  final Function(String category)? onCategoryTap;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -27,15 +30,17 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AddContactsToCategoryScreen(category: category),
+        builder: (context) => CategoryContactsScreen(category: category),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFE8ECF4),
+      backgroundColor: theme.brightness == Brightness.light ? const Color(0xFFE8ECF4) : theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(4),
@@ -48,7 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 onClear: () {
                   searchController.clear();
                 },
-                onMoreTap: () {},
               ),
               Expanded(
                 child: SingleChildScrollView(
@@ -83,10 +87,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         },
-        backgroundColor: Colors.teal,
-        child: const Icon(Icons.add),
+        backgroundColor: theme.colorScheme.primary,
+        child: Icon(
+          Icons.add,
+          color: theme.colorScheme.onPrimary,
+        ),
       ),
       bottomNavigationBar: const BottomNavigation(),
     );
   }
 }
+

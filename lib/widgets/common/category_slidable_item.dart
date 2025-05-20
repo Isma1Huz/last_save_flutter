@@ -28,11 +28,12 @@ class CategorySlidableItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return DynamicListItem(
       title: category.title,
       subtitle: subtitle,
       leading: CircleAvatar(
-        backgroundColor: Colors.black,
         radius: 16,
         child: Icon(
           Category.availableIcons[category.iconIndex],
@@ -43,6 +44,7 @@ class CategorySlidableItem extends StatelessWidget {
       onTap: onTap,
       timestamp: timestamp,
       badge: badge,
+      badgeColor: theme.colorScheme.primary,
       showChevron: showChevron,
       groupTag: groupTag,
       actions: actions,

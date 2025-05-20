@@ -26,6 +26,8 @@ class ContactSlidableItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return DynamicListItem(
       title: contact.name,
       subtitle: contact.phoneNumber,
@@ -33,6 +35,7 @@ class ContactSlidableItem extends StatelessWidget {
       onTap: onTap,
       timestamp: timestamp,
       badge: badge,
+      badgeColor: theme.colorScheme.primary,
       showChevron: showChevron,
       groupTag: groupTag,
       actions: actions,

@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:last_save/screens/splash_screen.dart';
 import 'package:last_save/utils/app_theme.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:last_save/utils/theme_provider.dart';
 import 'firebase_options.dart';
+import 'package:provider/provider.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +19,12 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -24,12 +32,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'LastSave',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      themeMode: ThemeMode.light,
-      home: const SplashScreen(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return MaterialApp(
+          title: 'LastSave',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
+          home: const SplashScreen(),
+        );
+      }
     );
   }
 }

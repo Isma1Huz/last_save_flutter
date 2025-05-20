@@ -16,45 +16,65 @@ class ContactActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildActionButton(Icons.call, 'Call', Colors.green, onCall),
-          _buildActionButton(Icons.message, 'Message', Colors.blue, onMessage),
-          _buildActionButton(Icons.videocam, 'Video', Colors.purple, onVideo),
-          _buildActionButton(Icons.email, 'Email', Colors.red, onEmail),
-        ],
-      ),
+    final textColor = Colors.white;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildActionButton(
+          icon: Icons.call,
+          label: 'Audio',
+          onTap: onCall,
+          textColor: textColor,
+        ),
+        _buildActionButton(
+          icon: Icons.videocam,
+          label: 'Video',
+          onTap: onVideo,
+          textColor: textColor,
+        ),
+        _buildActionButton(
+          icon: Icons.message,
+          label: 'Message',
+          onTap: onMessage,
+          textColor: textColor,
+        ),
+        _buildActionButton(
+          icon: Icons.currency_rupee,
+          label: 'Pay',
+          onTap: () {},
+          textColor: textColor,
+        ),
+      ],
     );
   }
 
-  Widget _buildActionButton(
-    IconData icon,
-    String label,
-    Color color,
-    VoidCallback onTap,
-  ) {
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required Color textColor,
+  }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                // ignore: deprecated_member_use
-                color: color.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 24),
+            Icon(
+              icon,
+              color: textColor,
+              size: 26,
             ),
-            const SizedBox(height: 4),
-            Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 13,
+              ),
+            ),
           ],
         ),
       ),

@@ -2,14 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:last_save/models/contact.dart';
-import 'package:last_save/screens/contact_details_screen.dart';
+import 'package:last_save/screens/contact_view_screen.dart';
 import 'package:last_save/services/device_contacts_service.dart';
 import 'package:last_save/services/permission_service.dart';
+import 'package:last_save/widgets/home/bottom_navigation.dart';
 import 'package:permission_handler/permission_handler.dart';
-
 import 'package:last_save/widgets/search/search_input.dart';
 import 'package:last_save/widgets/search/filter_tabs.dart';
-import 'package:last_save/widgets/search/contact_list.dart';
+import 'package:last_save/widgets/search/contacts_list.dart';
 import 'package:last_save/widgets/search/loading_state.dart';
 import 'package:last_save/widgets/search/error_state.dart';
 import 'package:last_save/widgets/search/empty_state.dart';
@@ -162,8 +162,9 @@ class _SearchScreenState extends State<SearchScreen> {
 }
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.brightness == Brightness.light ? Colors.white : theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -186,6 +187,8 @@ class _SearchScreenState extends State<SearchScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: const BottomNavigation(),
+
     );
   }
   
@@ -218,3 +221,8 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 }
+
+
+
+
+

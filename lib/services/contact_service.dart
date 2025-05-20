@@ -51,6 +51,7 @@ class ContactsService {
           customLabel: "Saved on: $formattedDateTime"
         )
       ];
+      debugPrint('Saving contact with timestamp: $formattedDateTime');
       
       // Set notes
       if ((notes != null && notes.isNotEmpty) || 

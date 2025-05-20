@@ -1,5 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:last_save/models/category.dart';
@@ -179,6 +178,13 @@ class _CategoriesSectionState extends State<CategoriesSection> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final darkBackgroundColor = isDark 
+        ? theme.scaffoldBackgroundColor.darken(5) 
+        : Colors.white;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -189,24 +195,36 @@ class _CategoriesSectionState extends State<CategoriesSection> with SingleTicker
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Colors.grey.shade800,
+              color: theme.textTheme.titleMedium?.color,
             ),
           ),
         ),
         if (_isLoading)
-          const Center(
+          Center(
             child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: CircularProgressIndicator(),
+              padding: const EdgeInsets.all(16.0),
+              child: CircularProgressIndicator(
+                color: theme.colorScheme.primary,
+              ),
             ),
           )
         else
           ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12),
+            child: Material( 
+              color: Colors.transparent,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 12),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(
+                  color: isDark ? darkBackgroundColor : Colors.white,
+                  boxShadow: [
+                    if (!isDark)
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 5,
+                        spreadRadius: 1,
+                      ),
+                  ],
+                  
                 ),
                 child: SlidableAutoCloseBehavior(
                   closeWhenOpened: true,
@@ -238,8 +256,22 @@ class _CategoriesSectionState extends State<CategoriesSection> with SingleTicker
                 ),
               ),
             ),
-
+          ),
       ],
+    );
+  }
+}
+
+// Extension to darken colors
+extension ColorExtension on Color {
+  Color darken([int percent = 10]) {
+    assert(1 <= percent && percent <= 100);
+    final f = 1 - percent / 100;
+    return Color.fromARGB(
+      alpha,
+      (red * f).round(),
+      (green * f).round(),
+      (blue * f).round(),
     );
   }
 }

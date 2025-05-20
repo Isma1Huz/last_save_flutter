@@ -20,15 +20,19 @@ class EmailField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Row(
       children: [
         Expanded(
           flex: 3,
           child: TextFormField(
             controller: controller,
-            decoration: const InputDecoration(
+            style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+            decoration: InputDecoration(
               labelText: 'Email address',
-              border: UnderlineInputBorder(),
+              labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+              border: const UnderlineInputBorder(),
             ),
             keyboardType: TextInputType.emailAddress,
           ),
@@ -37,10 +41,13 @@ class EmailField extends StatelessWidget {
         Expanded(
           flex: 2,
           child: DropdownButtonFormField<String>(
-            decoration: const InputDecoration(
-              border: UnderlineInputBorder(),
+            decoration: InputDecoration(
+              border: const UnderlineInputBorder(),
+              labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
             ),
             value: selectedType,
+            dropdownColor: theme.cardColor,
+            style: TextStyle(color: theme.textTheme.bodyLarge?.color),
             items: emailTypes.map((String type) {
               return DropdownMenuItem<String>(
                 value: type,
@@ -74,14 +81,18 @@ class EmailsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Email addresses',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
+            color: theme.textTheme.titleMedium?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -93,7 +104,10 @@ class EmailsWidget extends StatelessWidget {
                   children: [
                     Expanded(child: emails[index]),
                     IconButton(
-                      icon: const Icon(Icons.remove_circle_outline),
+                      icon: Icon(
+                        Icons.remove_circle_outline,
+                        color: theme.iconTheme.color,
+                      ),
                       onPressed: () => onRemoveEmail(index),
                     ),
                   ],
@@ -104,10 +118,10 @@ class EmailsWidget extends StatelessWidget {
           }),
         TextButton.icon(
           onPressed: onAddEmail,
-          icon: const Icon(Icons.add, color: Color(0xFF00BCD4)),
-          label: const Text(
+          icon: Icon(Icons.add, color: primaryColor),
+          label: Text(
             'Add email',
-            style: TextStyle(color: Color(0xFF00BCD4)),
+            style: TextStyle(color: primaryColor),
           ),
         ),
       ],

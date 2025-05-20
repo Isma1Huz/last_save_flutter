@@ -12,14 +12,16 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.search_off,
             size: 48,
-            color: Colors.grey,
+            color: theme.colorScheme.onSurface.withOpacity(0.5),
           ),
           const SizedBox(height: 16),
           Text(
@@ -27,7 +29,10 @@ class EmptyState extends StatelessWidget {
                 ? 'No contacts found matching "$searchQuery"'
                 : 'No contacts found on this device',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16),
+            style: TextStyle(
+              fontSize: 16,
+              color: theme.textTheme.bodyLarge?.color,
+            ),
           ),
         ],
       ),

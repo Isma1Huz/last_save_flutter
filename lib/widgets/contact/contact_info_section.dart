@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:last_save/models/contact.dart';
-import 'package:share_plus/share_plus.dart';
-import 'contact_info_tile.dart';
+import 'package:last_save/utils/app_theme.dart';
+import 'package:last_save/widgets/contact/contact_info_tile.dart';
 
 class ContactInfoSection extends StatelessWidget {
   final Contact contact;
@@ -19,51 +19,82 @@ class ContactInfoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+
+    final cardColor = isDarkMode 
+        ? AppTheme.darkSurfaceColor 
+        : Colors.white;
+    final iconColor = isDarkMode 
+        ? Colors.white70 
+        : theme.primaryColor;
+    final textColor = isDarkMode 
+        ? AppTheme.darkTextColorPrimary 
+        : AppTheme.darkTextColor;
+    final subtitleColor = isDarkMode 
+        ? AppTheme.darkTextColorSecondary 
+        : AppTheme.lightTextColor;
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
+        color: cardColor,
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
-        children: [
+        children: [          
+          // Phone number
           ContactInfoTile(
-            icon: Icons.phone,
-            title: 'Mobile',
-            subtitle: contact.phoneNumber,
+            icon: Icons.call,
+            title: contact.phoneNumber,
+            subtitle: "Mobile",
             onTap: onCall,
+            iconColor: iconColor,
+            textColor: textColor,
+            subtitleColor: subtitleColor,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(icon: Icon(Icons.message, color: Colors.blue.shade700, size: 20), onPressed: onMessage),
-                IconButton(icon: Icon(Icons.call, color: Colors.green.shade700, size: 20), onPressed: onCall),
+                IconButton(
+                  icon: Icon(
+                    Icons.message,
+                    color: iconColor,
+                    size: 22,
+                  ),
+                  onPressed: onMessage,
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.call,
+                    color: iconColor,
+                    size: 22,
+                  ),
+                  onPressed: onCall,
+                ),
               ],
             ),
           ),
+          
+          // Email if available
           if (contact.email != null && contact.email!.isNotEmpty)
             ContactInfoTile(
               icon: Icons.email,
-              title: 'Email',
-              subtitle: contact.email!,
+              title: contact.email!,
+              subtitle: "Email",
               onTap: onEmail,
-              trailing: IconButton(icon: Icon(Icons.email, color: Colors.red.shade700, size: 20), onPressed: onEmail),
+              iconColor: iconColor,
+              textColor: textColor,
+              subtitleColor: subtitleColor,
+              trailing: IconButton(
+                icon: Icon(
+                  Icons.email,
+                  color: iconColor,
+                  size: 22,
+                ),
+                onPressed: onEmail,
+              ),
+              isLast: true,
             ),
-          ContactInfoTile(
-            icon: Icons.share,
-            title: 'Share contact',
-            subtitle: 'Via message, email, or social',
-            onTap: () {
-              final String contactInfo = 'Name: ${contact.name}\nPhone: ${contact.phoneNumber}${contact.email != null ? '\nEmail: ${contact.email}' : ''}';
-              Share.share(contactInfo, subject: 'Contact Information: ${contact.name}');
-            },
-          ),
-          ContactInfoTile(
-            icon: Icons.block,
-            title: 'Block contact',
-            subtitle: 'Add to block list',
-            onTap: () {},
-            isLast: true,
-          ),
         ],
       ),
     );

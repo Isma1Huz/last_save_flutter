@@ -7,11 +7,17 @@ class PlacesRelationsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
-        Expanded(child: PlacesMapCard()),
-        SizedBox(width: 16),
-        Expanded(child: RelationsCard()),
+        const Expanded(child: ModernMapCard()),
+        const SizedBox(width: 16),
+        Expanded(child:  
+            RelationsCard(
+              title: 'Relations',
+              height: 180,
+              relatedNames: const ['John', 'Sarah', 'Mike', 'Lisa'],
+              onTap: () {},
+            ),),
       ],
     );
   }

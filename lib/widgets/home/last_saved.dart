@@ -1,8 +1,9 @@
+// lib/widgets/home/last_saved_section.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:last_save/models/contact.dart';
-import 'package:last_save/screens/contact_details_screen.dart';
+import 'package:last_save/screens/contact_view_screen.dart';
 import 'package:last_save/services/device_contacts_service.dart';
 import 'package:last_save/widgets/common/contact_avatar.dart';
 
@@ -23,23 +24,24 @@ class _LastSavedSectionState extends State<LastSavedSection> {
   void initState() {
     super.initState();
     _fetchRecentContacts();
+    _deviceContactsService.onContactsChanged.listen((_) {
+      debugPrint('Contacts changed notification received in LastSavedSection');
+      _fetchRecentContacts();
+    });
   }
 
   Future<void> _fetchRecentContacts() async {
+    debugPrint('Fetching recent contacts...');
     final allContacts = await _deviceContactsService.getDeviceContacts();
+    debugPrint('Got ${allContacts.length} contacts, sorting by timestamp...');
 
     final sortedContacts = List<Contact>.from(allContacts);
-    sortedContacts.sort((a, b) {
-      if (a.savedTimestamp == null && b.savedTimestamp == null) {
-        return 0; 
-      } else if (a.savedTimestamp == null) {
-        return 1;
-      } else if (b.savedTimestamp == null) {
-        return -1; 
-      } else {
-        return b.savedTimestamp!.compareTo(a.savedTimestamp!); 
-      }
-    });
+
+
+    // Debug timestamps
+    for (var contact in sortedContacts.take(80)) {
+      debugPrint('Contact: ${contact.name}, Timestamp: ${contact.savedTimestamp}');
+    }
 
     final recent = sortedContacts.take(10).toList();
 
@@ -113,17 +115,20 @@ class _LastSavedSectionState extends State<LastSavedSection> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return _isLoading
         ? const SizedBox.shrink()
         : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Last saved',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Colors.black87,
+                  color: theme.textTheme.titleMedium?.color,
                 ),
               ),
               const SizedBox(height: 8),
@@ -131,8 +136,8 @@ class _LastSavedSectionState extends State<LastSavedSection> {
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 12),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF8F9FC),
+                  decoration: BoxDecoration(
+                    color: isDark ? theme.cardColor : const Color(0xFFF8F9FC),
                   ),
                   child: SlidableAutoCloseBehavior(
                     closeWhenOpened: true,
@@ -152,7 +157,9 @@ class _LastSavedSectionState extends State<LastSavedSection> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: Colors.grey.shade200,
+                                    color: isDark 
+                                        ? theme.dividerColor 
+                                        : Colors.grey.shade200,
                                     width: 0.5,
                                   ),
                                 ),
@@ -164,9 +171,10 @@ class _LastSavedSectionState extends State<LastSavedSection> {
                                 leading: ContactAvatar(contact: contact),
                                 title: Text(
                                   contact.name,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
+                                    color: theme.textTheme.titleMedium?.color,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -178,7 +186,9 @@ class _LastSavedSectionState extends State<LastSavedSection> {
                                       Text(
                                         contact.phoneNumber,
                                         style: TextStyle(
-                                          color: Colors.grey[600],
+                                          color: isDark 
+                                              ? theme.textTheme.bodySmall?.color 
+                                              : Colors.grey[600],
                                           fontSize: 12,
                                           fontWeight: FontWeight.w400,
                                         ),
@@ -189,7 +199,9 @@ class _LastSavedSectionState extends State<LastSavedSection> {
                                       Text(
                                         _formatTimestamp(contact.savedTimestamp),
                                         style: TextStyle(
-                                          color: Colors.grey[500],
+                                          color: isDark 
+                                              ? theme.textTheme.bodySmall?.color?.withOpacity(0.7) 
+                                              : Colors.grey[500],
                                           fontSize: 12,
                                         ),
                                       ),

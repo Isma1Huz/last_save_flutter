@@ -25,6 +25,8 @@ class AddressField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -33,10 +35,13 @@ class AddressField extends StatelessWidget {
             Expanded(
               flex: 3,
               child: TextFormField(
+                textCapitalization: TextCapitalization.words,
                 controller: streetController,
-                decoration: const InputDecoration(
+                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                decoration: InputDecoration(
                   labelText: 'Street address',
-                  border: UnderlineInputBorder(),
+                  labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+                  border: const UnderlineInputBorder(),
                 ),
               ),
             ),
@@ -44,10 +49,13 @@ class AddressField extends StatelessWidget {
             Expanded(
               flex: 2,
               child: DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  border: UnderlineInputBorder(),
+                decoration: InputDecoration(
+                  border: const UnderlineInputBorder(),
+                  labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
                 ),
                 value: selectedType,
+                dropdownColor: theme.cardColor,
+                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
                 items: addressTypes.map((String type) {
                   return DropdownMenuItem<String>(
                     value: type,
@@ -66,9 +74,12 @@ class AddressField extends StatelessWidget {
         const SizedBox(height: 14),
         TextFormField(
           controller: cityController,
-          decoration: const InputDecoration(
+          textCapitalization: TextCapitalization.words,
+          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+          decoration: InputDecoration(
             labelText: 'City',
-            border: UnderlineInputBorder(),
+            labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+            border: const UnderlineInputBorder(),
           ),
         ),
         const SizedBox(height: 14),
@@ -76,10 +87,13 @@ class AddressField extends StatelessWidget {
           children: [
             Expanded(
               child: TextFormField(
+                textCapitalization: TextCapitalization.words,
                 controller: stateController,
-                decoration: const InputDecoration(
+                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                decoration: InputDecoration(
                   labelText: 'State/Province',
-                  border: UnderlineInputBorder(),
+                  labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+                  border: const UnderlineInputBorder(),
                 ),
               ),
             ),
@@ -87,9 +101,11 @@ class AddressField extends StatelessWidget {
             Expanded(
               child: TextFormField(
                 controller: zipController,
-                decoration: const InputDecoration(
+                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                decoration: InputDecoration(
                   labelText: 'ZIP/Postal code',
-                  border: UnderlineInputBorder(),
+                  labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+                  border: const UnderlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
               ),
@@ -116,14 +132,18 @@ class AddressesWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Addresses',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
+            color: theme.textTheme.titleMedium?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -135,7 +155,10 @@ class AddressesWidget extends StatelessWidget {
                     children: [
                       Expanded(child: addresses[index]),
                       IconButton(
-                        icon: const Icon(Icons.remove_circle_outline),
+                        icon: Icon(
+                          Icons.remove_circle_outline,
+                          color: theme.iconTheme.color,
+                        ),
                         onPressed: () => onRemoveAddress(index),
                       ),
                     ],
@@ -146,10 +169,10 @@ class AddressesWidget extends StatelessWidget {
           }),
         TextButton.icon(
           onPressed: onAddAddress,
-          icon: const Icon(Icons.add, color: Color(0xFF00BCD4)),
-          label: const Text(
+          icon: Icon(Icons.add, color: primaryColor),
+          label: Text(
             'Add address',
-            style: TextStyle(color: Color(0xFF00BCD4)),
+            style: TextStyle(color: primaryColor),
           ),
         ),
       ],
