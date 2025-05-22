@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:last_save/constants/onboarding_constants.dart';
 import 'package:last_save/screens/home_screen.dart';
 import 'package:last_save/services/permission_service.dart';
-import 'package:last_save/utils/image_precacher.dart';
 import 'package:last_save/widgets/onboarding/onboarding_content.dart';
 import 'package:last_save/widgets/onboarding/permissions_page.dart';
 import 'package:permission_handler/permission_handler.dart';

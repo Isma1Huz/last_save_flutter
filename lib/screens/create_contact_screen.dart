@@ -263,7 +263,7 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Basic Info (Name, Company)
+                      // Basic Info
                       BasicInfoWidget(
                         firstNameController: _firstNameController,
                         lastNameController: _lastNameController,

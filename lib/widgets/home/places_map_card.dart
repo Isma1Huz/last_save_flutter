@@ -223,8 +223,6 @@ class _BoltStyleMarkerState extends State<BoltStyleMarker> with SingleTickerProv
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
-    // Use a more vibrant color for the marker in dark mode
-    final primaryColor = isDarkMode ? Colors.blue[400] : Colors.black;
     final pulseColor = isDarkMode ? Colors.blue[300] : Colors.black;
     
     return Stack(

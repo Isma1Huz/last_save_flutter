@@ -3,14 +3,12 @@ import 'package:flutter/material.dart';
 class ContactActionButtons extends StatelessWidget {
   final VoidCallback onCall;
   final VoidCallback onMessage;
-  final VoidCallback onVideo;
   final VoidCallback onEmail;
 
   const ContactActionButtons({
     super.key,
     required this.onCall,
     required this.onMessage,
-    required this.onVideo,
     required this.onEmail,
   });
 
@@ -23,26 +21,14 @@ class ContactActionButtons extends StatelessWidget {
       children: [
         _buildActionButton(
           icon: Icons.call,
-          label: 'Audio',
+          label: 'Call',
           onTap: onCall,
-          textColor: textColor,
-        ),
-        _buildActionButton(
-          icon: Icons.videocam,
-          label: 'Video',
-          onTap: onVideo,
           textColor: textColor,
         ),
         _buildActionButton(
           icon: Icons.message,
           label: 'Message',
           onTap: onMessage,
-          textColor: textColor,
-        ),
-        _buildActionButton(
-          icon: Icons.currency_rupee,
-          label: 'Pay',
-          onTap: () {},
           textColor: textColor,
         ),
       ],

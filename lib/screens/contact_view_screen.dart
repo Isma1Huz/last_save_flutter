@@ -4,12 +4,14 @@ import 'package:last_save/models/contact.dart';
 import 'package:last_save/services/device_contacts_service.dart';
 import 'package:last_save/services/favorite_service.dart';
 import 'package:last_save/utils/app_theme.dart';
+import 'package:last_save/utils/contact_action_helper.dart';
 import 'package:last_save/widgets/contact/contact_header.dart';
 import 'package:last_save/widgets/contact/contact_action_buttons.dart';
 import 'package:last_save/widgets/contact/contact_info_section.dart';
 import 'package:last_save/widgets/contact/contact_media_section.dart';
 import 'package:last_save/widgets/contact/contact_privacy.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:last_save/utils/vcf_helper.dart';
 
 class ContactViewScreen extends StatefulWidget {
   final Contact contact;
@@ -114,9 +116,9 @@ class _ContactViewScreenState extends State<ContactViewScreen> {
                 child: Row(
                   children: [
                     Icon(contact.isFavorite ? Icons.star : Icons.star_border,
-                    color: contact.isFavorite ? Colors.amber : Colors.black, size: 20),
+                    color: contact.isFavorite ? Colors.amber : null, size: 20),
                     const SizedBox(width: 12),
-                    const Text('Add to favorites'),
+                    Text(contact.isFavorite ? 'Remove from favorites' : 'Add to favorites'),
                   ],
                 ),
               ),
@@ -124,9 +126,9 @@ class _ContactViewScreenState extends State<ContactViewScreen> {
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete, size: 20),
+                    Icon(Icons.delete, size: 20, color: Colors.red),
                     SizedBox(width: 12),
-                    Text('Delete contact'),
+                    Text('Delete contact', style: TextStyle(color: Colors.red)),
                   ],
                 ),
               ),
@@ -144,10 +146,9 @@ class _ContactViewScreenState extends State<ContactViewScreen> {
                   ContactHeader(contact: contact),
                   const SizedBox(height: 16),
                   ContactActionButtons(
-                    onCall: () => _makePhoneCall(contact.phoneNumber),
-                    onMessage: () => _sendSMS(contact.phoneNumber),
-                    onVideo: _makeVideoCall,
-                    onEmail: () => _sendEmail(contact.email),
+                    onCall: () => _makePhoneCall(context, contact.phoneNumber),
+                    onMessage: () => _sendSMS(context, contact.phoneNumber),
+                    onEmail: () => _sendEmail(context, contact.email),
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -156,9 +157,9 @@ class _ContactViewScreenState extends State<ContactViewScreen> {
             const SizedBox(height: 8),
             ContactInfoSection(
               contact: contact,
-              onCall: () => _makePhoneCall(contact.phoneNumber),
-              onMessage: () => _sendSMS(contact.phoneNumber),
-              onEmail: () => _sendEmail(contact.email),
+              onCall: () => _makePhoneCall(context, contact.phoneNumber),
+              onMessage: () => _sendSMS(context, contact.phoneNumber),
+              onEmail: () => _sendEmail(context, contact.email),
             ),
             const SizedBox(height: 8),
             ContactMediaSection(contact: contact),
@@ -170,25 +171,41 @@ class _ContactViewScreenState extends State<ContactViewScreen> {
     );
   }
 
-  void _makePhoneCall(String phoneNumber) async {
-    final Uri uri = Uri(scheme: 'tel', path: phoneNumber);
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  void _makePhoneCall(BuildContext context, String phoneNumber) {
+    ContactActionsHelper.makePhoneCallAlternative(context, phoneNumber);
   }
 
-  void _sendSMS(String phoneNumber) async {
-    final Uri uri = Uri(scheme: 'sms', path: phoneNumber);
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  void _sendSMS(BuildContext context, String phoneNumber) {
+    ContactActionsHelper.sendMessageAlternative(context, phoneNumber);
   }
 
-  void _makeVideoCall() {}
 
-  void _sendEmail(String? email) async {
-    if (email == null || email.isEmpty) return;
-    final Uri uri = Uri(scheme: 'mailto', path: email);
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  void _sendEmail(BuildContext context, String? email) {
+    if (email == null || email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No email address available')),
+      );
+      return;
+    }
+    
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: email,
+      queryParameters: {
+        'subject': 'Hello',
+      },
+    );
+    
+    try {
+      launchUrl(emailUri);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not launch email app: $e')),
+      );
+    }
   }
 
-  void _shareContact(Contact contact) {
-    // Implement sharing
+  Future<void> _shareContact(Contact contact) async {
+    await VcfHelper.shareContact(context, contact);
   }
 }

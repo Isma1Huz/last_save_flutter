@@ -64,7 +64,6 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     
-    // Define theme-aware colors
     final backgroundColor = isDark ? theme.scaffoldBackgroundColor : const Color(0xFFE8ECF4);
     final primaryColor = theme.colorScheme.primary;
     
@@ -164,6 +163,7 @@ class CategoryNameField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+      textCapitalization: TextCapitalization.words,
       decoration: InputDecoration(
         labelText: 'Category Name',
         border: const OutlineInputBorder(),
@@ -193,6 +193,7 @@ class CategoryDescriptionField extends StatelessWidget {
     
     return TextFormField(
       controller: controller,
+      textCapitalization: TextCapitalization.sentences,
       style: TextStyle(color: theme.textTheme.bodyLarge?.color),
       decoration: InputDecoration(
         labelText: 'Description (Optional)',

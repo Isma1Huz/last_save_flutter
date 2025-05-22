@@ -1,4 +1,3 @@
-// lib/widgets/home/last_saved_section.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
@@ -36,10 +35,21 @@ class _LastSavedSectionState extends State<LastSavedSection> {
     debugPrint('Got ${allContacts.length} contacts, sorting by timestamp...');
 
     final sortedContacts = List<Contact>.from(allContacts);
+    
+    sortedContacts.sort((a, b) {
+      if (a.savedTimestamp == null && b.savedTimestamp == null) {
+        return 0; 
+      } else if (a.savedTimestamp == null) {
+        return 1; 
+      } else if (b.savedTimestamp == null) {
+        return -1; 
+      }
+      
+      // Both have timestamps, compare them (descending order)
+      return b.savedTimestamp!.compareTo(a.savedTimestamp!);
+    });
 
-
-    // Debug timestamps
-    for (var contact in sortedContacts.take(80)) {
+    for (var contact in sortedContacts.take(10)) {
       debugPrint('Contact: ${contact.name}, Timestamp: ${contact.savedTimestamp}');
     }
 
@@ -169,40 +179,52 @@ class _LastSavedSectionState extends State<LastSavedSection> {
                                 visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
                                 contentPadding: EdgeInsets.zero,
                                 leading: ContactAvatar(contact: contact),
-                                title: Text(
-                                  contact.name,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                    color: theme.textTheme.titleMedium?.color,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                subtitle: Column(
+                                title: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    if (contact.phoneNumber.isNotEmpty)
-                                      Text(
-                                        contact.phoneNumber,
-                                        style: TextStyle(
-                                          color: isDark 
-                                              ? theme.textTheme.bodySmall?.color 
-                                              : Colors.grey[600],
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            contact.name,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                              color: theme.textTheme.titleMedium?.color,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          if (contact.phoneNumber.isNotEmpty)
+                                            Text(
+                                              contact.phoneNumber,
+                                              style: TextStyle(
+                                                color: isDark
+                                                    ? theme.textTheme.bodySmall?.color
+                                                    : Colors.grey[600],
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                        ],
                                       ),
+                                    ),
                                     if (_formatTimestamp(contact.savedTimestamp).isNotEmpty)
-                                      Text(
-                                        _formatTimestamp(contact.savedTimestamp),
-                                        style: TextStyle(
-                                          color: isDark 
-                                              ? theme.textTheme.bodySmall?.color?.withOpacity(0.7) 
-                                              : Colors.grey[500],
-                                          fontSize: 12,
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 8.0),
+                                        child: Text(
+                                          _formatTimestamp(contact.savedTimestamp),
+                                          style: TextStyle(
+                                            color: isDark
+                                                ? theme.textTheme.bodySmall?.color?.withOpacity(0.7)
+                                                : Colors.grey[500],
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                          textAlign: TextAlign.right,
                                         ),
                                       ),
                                   ],
@@ -212,7 +234,8 @@ class _LastSavedSectionState extends State<LastSavedSection> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => ContactViewScreen(contact: contact),
-                                    ));
+                                    ),
+                                  );
                                 },
                               ),
                             ),

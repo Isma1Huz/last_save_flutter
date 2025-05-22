@@ -17,12 +17,6 @@ class ContactPrivacySection extends StatelessWidget {
     final cardColor = isDarkMode 
         ? AppTheme.darkSurfaceColor 
         : Colors.white;
-    final iconColor = isDarkMode 
-        ? Colors.white70 
-        : const Color(0xFF008069);
-    final textColor = isDarkMode 
-        ? AppTheme.darkTextColorPrimary 
-        : AppTheme.darkTextColor;
     final subtitleColor = isDarkMode 
         ? AppTheme.darkTextColorSecondary 
         : AppTheme.lightTextColor;

@@ -16,87 +16,96 @@ class DeviceContactsService {
 
   List<app.Contact>? _deviceContacts;
   final PermissionService _permissionService = PermissionService();
-  
+
   final StreamController<bool> _contactsChangedController = StreamController<bool>.broadcast();
   Stream<bool> get onContactsChanged => _contactsChangedController.stream;
 
   bool get isLoaded => _deviceContacts != null;
-  
+
   void notifyContactsChanged() {
-    clearCache(); 
+    clearCache();
     _contactsChangedController.add(true);
   }
 
-DateTime? _extractSavedTimestamp(Contact contact) {
-  try {
-    final savedEvent = contact.events.firstWhere(
-      (event) => event.customLabel?.startsWith('Saved on:') ?? false,
-      orElse: () => Event(year: 0, month: 0, day: 0),
-    );
-    
-    if (savedEvent.customLabel?.startsWith('Saved on:') ?? false) {
-      final timestampStr = savedEvent.customLabel!.substring('Saved on: '.length);
-      try {
-        return DateFormat('yyyy-MM-dd HH:mm:ss').parse(timestampStr);
-      } catch (e) {
-        debugPrint('Error parsing timestamp: $e');
-        if (savedEvent.year! > 0 && savedEvent.month > 0 && savedEvent.day > 0) {
-          return DateTime(savedEvent.year!, savedEvent.month, savedEvent.day);
+  DateTime? _extractSavedTimestamp(Contact contact) {
+    try {
+      final savedEvent = contact.events.firstWhere(
+        (event) => event.customLabel.startsWith('Saved on:'),
+        orElse: () => Event(year: 0, month: 0, day: 0),
+      );
+
+      if (savedEvent.customLabel.startsWith('Saved on:')) {
+        final timestampStr = savedEvent.customLabel.substring('Saved on: '.length);
+        try {
+          return DateFormat('yyyy-MM-dd HH:mm:ss').parse(timestampStr);
+        } catch (e) {
+          debugPrint('Error parsing timestamp from event label: $e');
+          if (savedEvent.year! > 0 && savedEvent.month > 0 && savedEvent.day > 0) {
+            return DateTime(savedEvent.year!, savedEvent.month, savedEvent.day);
+          }
         }
       }
+
+      if (contact.notes.isNotEmpty) {
+        for (final note in contact.notes) {
+          if (note.note.contains('Saved on:')) {
+            final startIndex = note.note.indexOf('Saved on:') + 'Saved on:'.length;
+            final noteTimestampStr = note.note.substring(startIndex).trim();
+            try {
+              return DateFormat('yyyy-MM-dd HH:mm:ss').parse(noteTimestampStr);
+            } catch (e) {
+              debugPrint('Error parsing timestamp from notes: $e');
+            }
+          }
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error extracting saved timestamp: $e');
+      return null;
     }
-
-
-
-    return null;
-  } catch (e) {
-    debugPrint('Error extracting saved timestamp: $e');
-    return null;
   }
-}
 
-  
   Future<List<app.Contact>> getDeviceContacts() async {
     if (_deviceContacts != null) {
       return _deviceContacts!;
     }
-    
+
     try {
       await _permissionService.init();
       // ignore: unused_local_variable
       final onboardingCompleted = await _permissionService.isOnboardingCompleted();
-      
+
       final status = await ph.Permission.contacts.status;
       debugPrint('Permission status from permission_handler: ${status.toString()}');
-      
+
       if (!status.isGranted) {
         if (status.isPermanentlyDenied) {
           throw Exception('Contacts permission permanently denied. Please enable in settings.');
         }
-        
+
         final result = await ph.Permission.contacts.request();
         debugPrint('Permission request result: ${result.toString()}');
-        
+
         if (!result.isGranted) {
           throw Exception('Contacts permission not granted');
         }
       }
-      
+
       debugPrint('Fetching contacts...');
       final deviceContacts = await FlutterContacts.getContacts(
         withPhoto: true,
         withProperties: true,
         withThumbnail: true,
       );
-      
+
       debugPrint('Found ${deviceContacts.length} contacts on device');
-      
+
       if (deviceContacts.isEmpty) {
         debugPrint('No contacts found on device');
         return [];
       }
 
-      
       _deviceContacts = await Future.wait(deviceContacts.map((contact) async {
         Contact? fullContact;
         try {
@@ -105,24 +114,24 @@ DateTime? _extractSavedTimestamp(Contact contact) {
         } catch (e) {
           debugPrint('Error getting full contact: $e');
         }
-        
+
         final contactToUse = fullContact ?? contact;
-        
+
         String phoneNumber = '';
         if (contactToUse.phones.isNotEmpty) {
           phoneNumber = contactToUse.phones.first.number;
         }
-        
+
         String? email;
         if (contactToUse.emails.isNotEmpty) {
           email = contactToUse.emails.first.address;
         }
-        
+
         Uint8List? photo = contactToUse.photo;
         if (photo == null && contactToUse.thumbnail != null) {
           photo = contactToUse.thumbnail;
         }
-        
+
         final savedTimestamp = _extractSavedTimestamp(contactToUse);
 
         final isFavorite = FavoritesService().isFavorite(contactToUse.id);
@@ -132,29 +141,29 @@ DateTime? _extractSavedTimestamp(Contact contact) {
           name: contactToUse.displayName,
           phoneNumber: phoneNumber,
           email: email,
-          categories: [], 
+          categories: [],
           photo: photo,
-          savedTimestamp: savedTimestamp, 
+          savedTimestamp: savedTimestamp,
           isFavorite: await isFavorite,
         );
       }).toList());
-      
+
       debugPrint('Converted ${_deviceContacts!.length} contacts to app model');
-      
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('contacts_permission_granted', true);
-      
+
       return _deviceContacts!;
     } catch (e) {
       debugPrint('Error loading device contacts: $e');
       throw Exception('Failed to load contacts: $e');
     }
   }
-  
+
   void clearCache() {
     _deviceContacts = null;
   }
-  
+
   void dispose() {
     _contactsChangedController.close();
   }

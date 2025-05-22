@@ -16,6 +16,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -45,9 +46,12 @@ android {
         // Import the BoM for the Firebase platform
         implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
 
-        // Add the dependency for the Firebase Authentication library
         // When using the BoM, you don't specify versions in Firebase library dependencies
         implementation("com.google.firebase:firebase-auth")
+
+        //call logs
+        coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+
     }
 }
 

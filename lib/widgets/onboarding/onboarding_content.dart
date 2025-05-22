@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:last_save/utils/app_theme.dart';
 import 'package:last_save/widgets/onboarding/page_indicator.dart';
 
 class OnboardingContent extends StatelessWidget {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:last_save/screens/login_screen.dart';
 import 'package:last_save/screens/onboarding_screen.dart';
-import 'package:last_save/utils/app_theme.dart';
 import 'package:last_save/utils/form_validators.dart';
 import 'package:last_save/widgets/ui/app_button.dart';
 import 'package:last_save/widgets/layout/app_layout.dart';

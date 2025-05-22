@@ -44,7 +44,6 @@ class _EditCategoryScreenState extends State<EditCategoryScreen> {
     });
 
     try {
-      // Create an updated category with the new values
       final updatedCategory = widget.category.copyWith(
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim().isNotEmpty
@@ -53,7 +52,6 @@ class _EditCategoryScreenState extends State<EditCategoryScreen> {
         iconIndex: _selectedIconIndex,
       );
 
-      // Update the category in the service
       await CategoriesService.updateCategory(updatedCategory);
 
       if (mounted) {
@@ -138,6 +136,7 @@ class _EditCategoryScreenState extends State<EditCategoryScreen> {
             ),
             const SizedBox(height: 24),
             TextFormField(
+              textCapitalization: TextCapitalization.words,
               controller: _titleController,
               decoration: const InputDecoration(
                 labelText: 'Category Name',
@@ -152,6 +151,7 @@ class _EditCategoryScreenState extends State<EditCategoryScreen> {
             ),
             const SizedBox(height: 16),
             TextFormField(
+              textCapitalization: TextCapitalization.sentences,
               controller: _descriptionController,
               decoration: const InputDecoration(
                 labelText: 'Description (Optional)',

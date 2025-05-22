@@ -10,6 +10,7 @@ class ContactsList extends StatelessWidget {
   final String? Function(Contact)? badgeBuilder;
   final String? Function(Contact)? timestampBuilder;
   final bool showChevron;
+  final double borderRadius;
 
   const ContactsList({
     super.key,
@@ -19,32 +20,35 @@ class ContactsList extends StatelessWidget {
     this.badgeBuilder,
     this.timestampBuilder,
     this.showChevron = false,
-  });
+    this.borderRadius = 10,
+  });     
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    
     return ListView.builder(
       itemCount: contacts.length,
-      padding: const EdgeInsets.symmetric(vertical: 8 , horizontal: 10),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
       itemBuilder: (context, index) {
         final contact = contacts[index];
         return Card(
-           color: theme.brightness == Brightness.light
-              ? theme.cardColor
-              : theme.cardColor,
+          color: theme.cardColor,
           elevation: theme.brightness == Brightness.light ? 0 : 1,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30.0),
-            ),
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
+          clipBehavior: Clip.antiAlias, 
+          margin: const EdgeInsets.only(bottom: 8),
           child: ContactSlidableItem(
-          contact: contact,
-          onTap: () => onContactTap(contact),
-          timestamp: timestampBuilder != null ? timestampBuilder!(contact) : null,
-          badge: badgeBuilder != null ? badgeBuilder!(contact) : null,
-          showChevron: showChevron,
-          actions: actionsBuilder != null ? actionsBuilder!(contact) : null,
-        ));
+            contact: contact,
+            onTap: () => onContactTap(contact),
+            timestamp: timestampBuilder != null ? timestampBuilder!(contact) : null,
+            badge: badgeBuilder != null ? badgeBuilder!(contact) : null,
+            showChevron: showChevron,
+            actions: actionsBuilder != null ? actionsBuilder!(contact) : null,
+          ),
+        );
       },
     );
   }

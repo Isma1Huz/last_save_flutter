@@ -65,7 +65,6 @@ class DynamicListItem extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     
-    // Get appropriate colors from theme
     final backgroundColor = isDark ? theme.cardColor : Colors.white;
     final dividerColor = isDark ? theme.dividerColor : Colors.grey.shade200;
     

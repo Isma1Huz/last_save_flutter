@@ -7,7 +7,6 @@ import 'package:last_save/services/categories_service.dart';
 import 'package:last_save/widgets/search/contacts_list.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
-
 class CategoryContactsScreen extends StatefulWidget {
   final Category category;
 
@@ -97,14 +96,64 @@ class _CategoryContactsScreenState extends State<CategoryContactsScreen> {
   List<SlidableAction> _buildSlidableActions(Contact contact) {
     return [
       SlidableAction(
+        onPressed: (_) {
+          // Add note functionality
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Add note functionality')),
+          );
+        },
+        backgroundColor: Colors.orange,
+        foregroundColor: Colors.white,
+        icon: Icons.note_add,
+      ),
+      SlidableAction(
+        onPressed: (_) {
+          // Add reminder functionality
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Add reminder functionality')),
+          );
+        },
+        backgroundColor: Colors.purple,
+        foregroundColor: Colors.white,
+        icon: Icons.alarm,
+      ),
+      SlidableAction(
         onPressed: (_) => _removeContactFromCategory(contact),
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
         icon: Icons.delete,
-        label: 'Remove',
         borderRadius: const BorderRadius.horizontal(right: Radius.circular(12)),
       ),
     ];
+  }
+
+  String? _getContactTimestamp(Contact contact) {
+    if (contact.savedTimestamp != null) {
+      // Format the timestamp as needed
+      return 'Saved ${_formatTimestamp(contact.savedTimestamp!)}';
+    }
+    return null;
+  }
+
+  String _formatTimestamp(DateTime timestamp) {
+    // Get the current time
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+    
+    if (difference.inDays == 0) {
+      // Today - show time
+      return 'Today ${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+    } else if (difference.inDays == 1) {
+      // Yesterday
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      // This week - show day of week
+      final weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      return weekdays[timestamp.weekday - 1];
+    } else {
+      // Older - show date
+      return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
+    }
   }
 
   Widget _buildContentArea() {
@@ -182,7 +231,9 @@ class _CategoryContactsScreenState extends State<CategoryContactsScreen> {
         );
       },
       actionsBuilder: (contact) => _buildSlidableActions(contact),
-      showChevron: true,
+      timestampBuilder: _getContactTimestamp,
+      showChevron: false,
+      borderRadius: 12,
     );
   }
 

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:last_save/models/contact.dart';
-import 'package:last_save/widgets/common/contact_avatar.dart';
-import 'package:last_save/widgets/common/dynamic_list_item.dart';
+import 'package:last_save/widgets/common/expandable_contact_item.dart';
 
 class ContactSlidableItem extends StatelessWidget {
   final Contact contact;
@@ -26,16 +25,11 @@ class ContactSlidableItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return DynamicListItem(
-      title: contact.name,
-      subtitle: contact.phoneNumber,
-      leading: ContactAvatar(contact: contact),
-      onTap: onTap,
+    return ExpandableContactItem(
+      contact: contact,
+      onViewContact: onTap,
       timestamp: timestamp,
       badge: badge,
-      badgeColor: theme.colorScheme.primary,
       showChevron: showChevron,
       groupTag: groupTag,
       actions: actions,
